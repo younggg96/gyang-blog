@@ -8,7 +8,15 @@ import LoginDto from './dto/login.dto';
 @Injectable()
 export class AuthService {
   constructor(private prisma: PrismaService, private jwt: JwtService) {}
+
+  async getAll() {
+    return await this.prisma.user.findMany();
+  }
+
   async register(dto: RegisterDto) {
+    if (dto.password !== dto.password_confirm) {
+      throw new BadRequestException('Password comfirm error, please check...');
+    }
     const user = await this.prisma.user.create({
       data: {
         name: dto.name,

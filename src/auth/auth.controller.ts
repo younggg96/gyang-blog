@@ -3,6 +3,8 @@ import { AuthService } from './auth.service';
 import { Body, Post } from '@nestjs/common/decorators';
 import RegisterDto from './dto/register.dto';
 import LoginDto from './dto/login.dto';
+import { Auth } from './decorator/auth.decorator';
+import { Role } from './enum';
 
 @Controller('auth')
 export class AuthController {
@@ -16,5 +18,11 @@ export class AuthController {
   @Post('login')
   login(@Body() body: LoginDto) {
     return this.auth.login(body);
+  }
+
+  @Post('getAll')
+  @Auth(Role.ADMIN)
+  getAllUsers() {
+    return this.auth.getAll();
   }
 }
