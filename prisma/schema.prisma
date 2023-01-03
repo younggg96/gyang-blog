@@ -14,7 +14,7 @@ model user {
   id       Int    @id @default(autoincrement()) @db.UnsignedInt
   name     String @unique
   password String
-  role     String
+  role     String?
 }
 
 model category {

@@ -19,10 +19,10 @@ export class ArticleService {
   }
 
   async findAll(page) {
-    const row = this.config.get('ARTICLE_PAGE_ROW');
+    const row = +this.config.get('ARTICLE_PAGE_ROW');
     const articles = await this.prisma.article.findMany({
       skip: (page - 1) * row,
-      take: +row,
+      take: row,
     });
     const total = await this.prisma.article.count();
     return {
