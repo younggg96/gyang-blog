@@ -11,8 +11,9 @@ datasource db {
 }
 
 model user {
-  id       Int    @id @default(autoincrement()) @db.UnsignedInt
-  name     String @unique
+  id       Int     @id @default(autoincrement()) @db.UnsignedInt
+  email    String  @unique
+  username String
   password String
   role     String?
 }

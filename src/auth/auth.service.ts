@@ -15,11 +15,12 @@ export class AuthService {
 
   async register(dto: RegisterDto) {
     if (dto.password !== dto.password_confirm) {
-      throw new BadRequestException('Password comfirm error, please check...');
+      throw new BadRequestException({ password: 'Password comfirm error, please check...' });
     }
     const user = await this.prisma.user.create({
       data: {
-        name: dto.name,
+        email: dto.email,
+        username: dto.username,
         password: await hash(dto.password),
       },
     });
@@ -29,20 +30,20 @@ export class AuthService {
   async login(dto: LoginDto) {
     const user = await this.prisma.user.findUnique({
       where: {
-        name: dto.name,
+        email: dto.email,
       },
     });
 
     if (!(await verify(user.password, dto.password))) {
-      throw new BadRequestException('Password incorrect, please check...');
+      throw new BadRequestException({ password: 'Incorrect password, please check...' });
     }
     return this.token(user);
   }
 
-  private async token({ id, name }) {
+  private async token({ id, email }) {
     return {
       token: await this.jwt.signAsync({
-        name,
+        email,
         sub: id,
       }),
     };
