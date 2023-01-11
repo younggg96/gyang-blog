@@ -11,11 +11,15 @@ datasource db {
 }
 
 model user {
-  id       Int     @id @default(autoincrement()) @db.UnsignedInt
-  email    String  @unique
-  username String
-  password String
-  role     String?
+  id        Int       @id @default(autoincrement()) @db.UnsignedInt
+  email     String    @unique
+  username  String
+  password  String
+  avatar    String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  role      String?
+  article   article[]
 }
 
 model category {
@@ -27,7 +31,12 @@ model category {
 model article {
   id         Int      @id @default(autoincrement()) @db.UnsignedInt
   title      String
+  img        String?
   content    String   @db.Text
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
   category   category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   categoryId Int      @db.UnsignedInt
+  user       user     @relation(fields: [userId], references: [id])
+  userId     Int      @db.UnsignedInt
 }

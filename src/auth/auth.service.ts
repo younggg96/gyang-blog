@@ -24,7 +24,8 @@ export class AuthService {
         password: await hash(dto.password),
       },
     });
-    return this.token(user);
+    delete user.password;
+    return { user: user, token: await this.token(user) };
   }
 
   async login(dto: LoginDto) {
@@ -37,15 +38,14 @@ export class AuthService {
     if (!(await verify(user.password, dto.password))) {
       throw new BadRequestException({ password: 'Incorrect password, please check...' });
     }
-    return this.token(user);
+    delete user.password;
+    return { user, token: await this.token(user) };
   }
 
   private async token({ id, email }) {
-    return {
-      token: await this.jwt.signAsync({
-        email,
-        sub: id,
-      }),
-    };
+    return await this.jwt.signAsync({
+      email,
+      sub: id,
+    });
   }
 }
