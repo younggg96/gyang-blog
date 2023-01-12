@@ -1,0 +1,13 @@
+type paginateData = { page: number; total: number; row: number; data: any[] };
+
+export const paginate = ({ page, row, total, data }: paginateData) => {
+  return {
+    meta: {
+      current_page: page,
+      row: row,
+      total,
+      page_row: Math.ceil(total / row),
+    },
+    data,
+  };
+};

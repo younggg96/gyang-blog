@@ -33,6 +33,7 @@ model article {
   title      String
   img        String?
   content    String   @db.Text
+  published  Boolean  @default(false)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
   category   category @relation(fields: [categoryId], references: [id], onDelete: Cascade)

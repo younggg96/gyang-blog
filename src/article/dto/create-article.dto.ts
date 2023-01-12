@@ -5,6 +5,9 @@ export class CreateArticleDto {
   title: string;
   @IsNotEmpty({ message: "content couldn't be empty" })
   content: string;
-  @IsNotEmpty({ message: 'please choose category' })
+  @IsNotEmpty({
+    message: "category couldn't be empty",
+  })
   categoryId: number;
+  img: string;
 }
