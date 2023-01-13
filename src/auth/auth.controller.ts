@@ -4,7 +4,7 @@ import { Body, Post } from '@nestjs/common/decorators';
 import RegisterDto from './dto/register.dto';
 import LoginDto from './dto/login.dto';
 import { Auth } from './decorator/auth.decorator';
-import { Role } from './enum';
+import { Role } from './guards/role/config';
 
 @Controller('auth')
 export class AuthController {

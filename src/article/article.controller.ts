@@ -6,6 +6,7 @@ import { User } from 'src/auth/decorator/user.decorator';
 import { user as UserType } from '@prisma/client';
 import { DefaultValuePipe } from '@nestjs/common/pipes';
 import { Auth } from 'src/auth/decorator/auth.decorator';
+import { Policy } from 'src/casl/decorator/policy.decorator';
 
 @Controller('article')
 export class ArticleController {
@@ -34,11 +35,13 @@ export class ArticleController {
   }
 
   @Patch(':id')
+  @Policy({ action: 'update', type: 'article' })
   update(@Param('id') id: string, @Body() updateArticleDto: UpdateArticleDto) {
     return this.articleService.update(+id, updateArticleDto);
   }
 
   @Delete(':id')
+  @Policy({ action: 'delete', type: 'article' })
   remove(@Param('id') id: string) {
     return this.articleService.remove(+id);
   }

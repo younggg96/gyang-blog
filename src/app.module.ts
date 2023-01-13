@@ -5,10 +5,13 @@ import { ArticleModule } from './article/article.module';
 import { ConfigModule } from '@nestjs/config';
 import { CategoryModule } from './category/category.module';
 import { UploadModule } from './upload/upload.module';
+import { CaslModule } from './casl/casl.module';
+import config from './config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
+      load: config,
       isGlobal: true,
     }),
     AuthModule,
@@ -16,6 +19,7 @@ import { UploadModule } from './upload/upload.module';
     ArticleModule,
     CategoryModule,
     UploadModule,
+    CaslModule,
   ],
   controllers: [],
   providers: [],
