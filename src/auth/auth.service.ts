@@ -4,6 +4,8 @@ import RegisterDto from './dto/register.dto';
 import { hash, verify } from 'argon2';
 import { JwtService } from '@nestjs/jwt/dist';
 import LoginDto from './dto/login.dto';
+import CheckAccountDto from './dto/checkAccount.dto';
+import ResetPwdDto from './dto/resetPwd.dto';
 
 @Injectable()
 export class AuthService {
@@ -11,6 +13,40 @@ export class AuthService {
 
   async getAll() {
     return await this.prisma.user.findMany();
+  }
+
+  async check(dto: CheckAccountDto) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        email: dto.email,
+      },
+    });
+    const { email, username, avatar } = user;
+    return {
+      email,
+      username,
+      avatar,
+      userExist: !!user,
+    };
+  }
+
+  async resetPwd(dto: ResetPwdDto) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        email: dto.email,
+      },
+    });
+
+    if (!(await verify(user.password, dto.old_password))) {
+      throw new BadRequestException({ password: 'Incorrect old password, please check...' });
+    }
+    const newUser = await this.prisma.user.update({
+      where: {
+        email: dto.email,
+      },
+      data: { password: await hash(dto.new_password) },
+    });
+    return { pwdUpdated: true, token: await this.token(newUser) };
   }
 
   async register(dto: RegisterDto) {

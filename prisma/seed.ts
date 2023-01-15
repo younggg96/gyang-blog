@@ -4,8 +4,8 @@ import article from './seed/article';
 
 async function run() {
   await user();
-  await category();
   await article();
+  await category();
 }
 
 run();

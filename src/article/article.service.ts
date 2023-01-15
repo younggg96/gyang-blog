@@ -6,6 +6,7 @@ import { ConfigService } from '@nestjs/config';
 
 import { user as UserType } from '@prisma/client';
 import { paginate } from 'src/helper/helper';
+import _ from 'lodash';
 
 @Injectable()
 export class ArticleService {
@@ -16,9 +17,13 @@ export class ArticleService {
       data: {
         title: createArticleDto.title,
         content: createArticleDto.content,
-        categoryId: +createArticleDto.categoryId,
         img: createArticleDto.img,
         userId: user.id,
+        categories: {
+          create: {
+            categoryId: +createArticleDto.categoryId,
+          },
+        },
       },
     });
   }
@@ -34,6 +39,7 @@ export class ArticleService {
         user: {
           select: { id: true, username: true, avatar: true },
         },
+        categories: true,
       },
     });
     const total = await this.prisma.article.count();
@@ -61,6 +67,26 @@ export class ArticleService {
     return paginate({ page, data: articles, total: articlesByUser.length, row });
   }
 
+  async findAllByCategoryId(p: number, id: string) {
+    const page = +p; // sting -> number
+    const row = +this.config.get('ARTICLE_PAGE_ROW'); // sting -> number
+    const articlesIds = await this.prisma.articleCategory.findMany({
+      where: {
+        categoryId: +id,
+      },
+    });
+    const articles = [];
+    for (const element of articlesIds) {
+      const data = await this.prisma.article.findUnique({
+        where: {
+          id: element.articleId,
+        },
+      });
+      articles.push(data);
+    }
+    return paginate({ page, data: articles, total: articles.length, row });
+  }
+
   async findOne(id: number) {
     return await this.prisma.article.findFirst({
       where: {
@@ -77,7 +103,7 @@ export class ArticleService {
       where: {
         id,
       },
-      data: { ...updateArticleDto, categoryId: +updateArticleDto.categoryId },
+      data: { ..._.pick(updateArticleDto, ['title', 'content']) },
     });
   }
 

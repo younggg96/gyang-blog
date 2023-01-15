@@ -29,6 +29,11 @@ export class ArticleController {
     return this.articleService.findAllByUserId(page, user);
   }
 
+  @Get('/categoryId/:id')
+  findAllByCategoryId(@Query('page', new DefaultValuePipe(1)) page: number, @Param('id') id: string) {
+    return this.articleService.findAllByCategoryId(page, id);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.articleService.findOne(+id);

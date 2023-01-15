@@ -12,8 +12,9 @@ import { JwtStrategy } from './strategy/jwt.strategy';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
+        console.log(config.get('app.token_access'));
         return {
-          secret: config.get('TOKEN_SECRET'),
+          secret: config.get('app.token_access'),
           signOptions: { expiresIn: '100d' },
         };
       },

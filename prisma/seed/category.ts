@@ -7,6 +7,11 @@ export default async () => {
     return prisma.category.create({
       data: {
         title: Random.title(1, 2),
+        articles: {
+          create: {
+            articleId: Random.integer(1, 10),
+          },
+        },
       },
     });
   });

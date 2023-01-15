@@ -7,11 +7,11 @@ const prisma = new PrismaClient();
 export default async () => {
   await prisma.user.create({
     data: {
-      username: 'yang',
       email: 'yang960123@gmail.com',
+      username: 'yang',
       password: await hash('admin888'),
-      role: 'admin',
       avatar: 'https://i.pravatar.cc/150?img=' + Random.integer(1, 50),
+      role: 'admin',
     },
   });
   await create(10, async (prisma: PrismaClient) => {
