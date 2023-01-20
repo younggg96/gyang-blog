@@ -1,11 +1,15 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import RegisterDto from './dto/register.dto';
 import { hash, verify } from 'argon2';
 import { JwtService } from '@nestjs/jwt/dist';
+import { user as UserType } from '@prisma/client';
+// dto
 import LoginDto from './dto/login.dto';
-import CheckAccountDto from './dto/checkAccount.dto';
+import RegisterDto from './dto/register.dto';
 import ResetPwdDto from './dto/resetPwd.dto';
+import CheckAccountDto from './dto/checkAccount.dto';
+import { Role } from './guards/role/config';
+import { paginate } from 'src/helper/helper';
 
 @Injectable()
 export class AuthService {
@@ -13,6 +17,25 @@ export class AuthService {
 
   async getAll() {
     return await this.prisma.user.findMany();
+  }
+
+  async getTopUserList(p: number, r: number) {
+    const page = +p; // sting -> number
+    const row = +r; // sting -> number
+    const total = await this.prisma.user.count();
+    const topUsers = await this.prisma.user.findMany({
+      skip: (page - 1) * row,
+      take: row,
+      orderBy: {
+        articles: {
+          _count: 'desc',
+        },
+      },
+      include: {
+        articles: true,
+      },
+    });
+    return paginate({ page, data: topUsers, total, row });
   }
 
   async check(dto: CheckAccountDto) {
@@ -28,6 +51,16 @@ export class AuthService {
       avatar,
       userExist: !!user,
     };
+  }
+
+  async getUserInfo(id: string) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: +id,
+      },
+    });
+    delete user.password;
+    return { user };
   }
 
   async resetPwd(dto: ResetPwdDto) {
@@ -58,6 +91,7 @@ export class AuthService {
         email: dto.email,
         username: dto.username,
         password: await hash(dto.password),
+        role: Role.USER,
       },
     });
     delete user.password;
@@ -76,6 +110,11 @@ export class AuthService {
     }
     delete user.password;
     return { user, token: await this.token(user) };
+  }
+
+  async identify(user: UserType) {
+    delete user.password;
+    return { user, identified: true };
   }
 
   private async token({ id, email }) {

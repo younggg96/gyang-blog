@@ -3,6 +3,11 @@ import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 
+type CategoryArticle = {
+  categoryId: number;
+  articleId: number;
+};
+
 @Injectable()
 export class CategoryService {
   constructor(private prisma: PrismaService) {}
@@ -22,6 +27,18 @@ export class CategoryService {
         id,
       },
     });
+  }
+
+  async findMany(categoriesList: Array<CategoryArticle>) {
+    const categories = [];
+    const ids = [];
+    for (const obj of categoriesList) {
+      ids.push(obj?.categoryId);
+    }
+    for (const id of ids) {
+      categories.push(await this.findOne(id));
+    }
+    return categories;
   }
 
   update(id: number, updateCategoryDto: UpdateCategoryDto) {

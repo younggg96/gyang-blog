@@ -7,10 +7,11 @@ import { user as UserType } from '@prisma/client';
 import { DefaultValuePipe } from '@nestjs/common/pipes';
 import { Auth } from 'src/auth/decorator/auth.decorator';
 import { Policy } from 'src/casl/decorator/policy.decorator';
+import { CategoryService } from 'src/category/category.service';
 
 @Controller('article')
 export class ArticleController {
-  constructor(private readonly articleService: ArticleService) {}
+  constructor(private readonly articleService: ArticleService, private readonly categoryService: CategoryService) {}
 
   @Post()
   @Auth()
@@ -19,14 +20,29 @@ export class ArticleController {
   }
 
   @Get()
-  findAll(@Query('page', new DefaultValuePipe(1)) page: number) {
-    return this.articleService.findAll(page);
+  async findAll(@Query('page', new DefaultValuePipe(1)) page: number) {
+    const { meta, data } = await this.articleService.findAll(page);
+    const res = await Promise.all(
+      data.map(async (article) => {
+        const categories = await this.categoryService.findMany(article.categories);
+        return {
+          ...article,
+          categories,
+        };
+      }),
+    );
+    return { meta, data: res };
   }
 
   @Get('/user')
   @Auth()
-  findAllByUserId(@Query('page', new DefaultValuePipe(1)) page: number, @User() user: UserType) {
-    return this.articleService.findAllByUserId(page, user);
+  findAllByUser(@Query('page', new DefaultValuePipe(1)) page: number, @User() user: UserType) {
+    return this.articleService.findAllByUser(page, user);
+  }
+
+  @Get('/userId/:id')
+  findAllByUserId(@Query('page', new DefaultValuePipe(1)) page: number, @Param('id') id: string) {
+    return this.articleService.findAllByUserId(page, id);
   }
 
   @Get('/categoryId/:id')

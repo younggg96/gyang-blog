@@ -19,7 +19,7 @@ model user {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   role      String?
-  article   article[]
+  articles  article[]
 }
 
 model category {

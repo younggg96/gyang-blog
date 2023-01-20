@@ -46,7 +46,7 @@ export class ArticleService {
     return paginate({ page, data: articles, total, row });
   }
 
-  async findAllByUserId(p: number, user: UserType) {
+  async findAllByUser(p: number, user: UserType) {
     const page = +p; // sting -> number
     const row = +this.config.get('ARTICLE_PAGE_ROW'); // sting -> number
     const articles = await this.prisma.article.findMany({
@@ -62,6 +62,27 @@ export class ArticleService {
     const articlesByUser = await this.prisma.article.findMany({
       where: {
         userId: user.id,
+      },
+    });
+    return paginate({ page, data: articles, total: articlesByUser.length, row });
+  }
+
+  async findAllByUserId(p: number, id: string) {
+    const page = +p; // sting -> number
+    const row = +this.config.get('ARTICLE_PAGE_ROW'); // sting -> number
+    const articles = await this.prisma.article.findMany({
+      where: {
+        userId: +id,
+      },
+      skip: (page - 1) * row,
+      take: row,
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+    const articlesByUser = await this.prisma.article.findMany({
+      where: {
+        userId: +id,
       },
     });
     return paginate({ page, data: articles, total: articlesByUser.length, row });
