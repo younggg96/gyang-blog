@@ -15,11 +15,7 @@ import { MulterModule } from '@nestjs/platform-express';
             destination: 'uploads',
             //文件名定制
             filename: (req, file, callback) => {
-              const path =
-                Date.now() +
-                '-' +
-                Math.round(Math.random() * 1e10) +
-                extname(file.originalname);
+              const path = Date.now() + '-' + Math.round(Math.random() * 1e10) + extname(file.originalname);
               callback(null, path);
             },
           }),

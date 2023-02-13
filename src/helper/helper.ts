@@ -11,3 +11,11 @@ export const paginate = ({ page, row, total, data }: paginateData) => {
     data,
   };
 };
+
+export const sleep = (time: number): Promise<string> => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve('Sleep');
+    }, time);
+  });
+};

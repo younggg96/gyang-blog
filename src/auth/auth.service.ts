@@ -1,19 +1,21 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { hash, verify } from 'argon2';
-import { JwtService } from '@nestjs/jwt/dist';
+import { Role } from './guards/role/config';
+import { paginate, sleep } from 'src/helper/helper';
 import { user as UserType } from '@prisma/client';
+import { hash, verify } from 'argon2';
+// service
+import { ProfileService } from 'src/profile/profile.service';
+import { JwtService } from '@nestjs/jwt/dist';
+import { PrismaService } from 'src/prisma/prisma.service';
 // dto
 import LoginDto from './dto/login.dto';
 import RegisterDto from './dto/register.dto';
 import ResetPwdDto from './dto/resetPwd.dto';
 import CheckAccountDto from './dto/checkAccount.dto';
-import { Role } from './guards/role/config';
-import { paginate } from 'src/helper/helper';
 
 @Injectable()
 export class AuthService {
-  constructor(private prisma: PrismaService, private jwt: JwtService) {}
+  constructor(private prisma: PrismaService, private profileService: ProfileService, private jwt: JwtService) {}
 
   async getAll() {
     return await this.prisma.user.findMany();
@@ -59,8 +61,10 @@ export class AuthService {
         id: +id,
       },
     });
+    const profile = await this.profileService.findOne(user.email);
+    await sleep(3000);
     delete user.password;
-    return { user };
+    return { user, profile };
   }
 
   async resetPwd(dto: ResetPwdDto) {
@@ -92,6 +96,17 @@ export class AuthService {
         username: dto.username,
         password: await hash(dto.password),
         role: Role.USER,
+      },
+    });
+    await this.prisma.profile.create({
+      data: {
+        backgroundImg:
+          'https://images.unsplash.com/photo-1676085272653-5e77875eed3d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1742&q=80',
+        bio: 'There is nothing',
+        github: '',
+        linkedin: '',
+        facebook: '',
+        userEmail: dto.email,
       },
     });
     delete user.password;

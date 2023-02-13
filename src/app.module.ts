@@ -6,6 +6,7 @@ import { ConfigModule } from '@nestjs/config';
 import { CategoryModule } from './category/category.module';
 import { UploadModule } from './upload/upload.module';
 import { CaslModule } from './casl/casl.module';
+import { ProfileModule } from './profile/profile.module';
 import config from './config';
 
 @Module({
@@ -20,6 +21,7 @@ import config from './config';
     CategoryModule,
     UploadModule,
     CaslModule,
+    ProfileModule,
   ],
   controllers: [],
   providers: [],

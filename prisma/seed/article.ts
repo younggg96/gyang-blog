@@ -9,9 +9,10 @@ export default async () => {
       data: {
         title: Random.title(3, 5),
         img: 'https://source.unsplash.com/random/1280x960?sig=' + _.random(1, 20),
-        content: Random.paragraph(1, 8),
+        description: Random.paragraph(1, 2),
+        content: Random.paragraph(50, 100),
         userId: Random.integer(1, 11),
-        published: false,
+        published: true,
       },
     });
   });

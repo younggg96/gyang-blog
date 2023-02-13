@@ -5,7 +5,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 
 import { user as UserType } from '@prisma/client';
-import { paginate } from 'src/helper/helper';
+import { paginate, sleep } from 'src/helper/helper';
 import _ from 'lodash';
 
 @Injectable()
@@ -109,12 +109,16 @@ export class ArticleService {
   }
 
   async findOne(id: number) {
+    await sleep(3000);
     return await this.prisma.article.findFirst({
       where: {
         id,
       },
       include: {
-        user: { select: { id: true, avatar: true, username: true } },
+        user: {
+          select: { id: true, username: true, avatar: true, email: true },
+        },
+        categories: true,
       },
     });
   }

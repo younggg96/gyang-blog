@@ -11,15 +11,31 @@ datasource db {
 }
 
 model user {
-  id        Int       @id @default(autoincrement()) @db.UnsignedInt
-  email     String    @unique
-  username  String
-  password  String
-  avatar    String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  role      String?
-  articles  article[]
+  id          Int          @id @default(autoincrement()) @db.UnsignedInt
+  email       String       @unique
+  username    String
+  password    String
+  avatar      String?
+  profile     profile?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  role        String?
+  articles    article[]
+  collections collection[]
+  like        like[]
+  comments    comment[]
+  reply       reply[]
+}
+
+model profile {
+  profileId     Int     @id @default(autoincrement())
+  backgroundImg String?
+  bio           String?  @db.Text
+  github        String?
+  linkedin      String?
+  facebook      String?
+  user          user    @relation(fields: [userEmail], references: [email])
+  userEmail     String  @unique
 }
 
 model category {
@@ -29,16 +45,29 @@ model category {
 }
 
 model article {
-  id         Int               @id @default(autoincrement()) @db.UnsignedInt
-  title      String
-  img        String?
-  content    String            @db.Text
-  published  Boolean           @default(false)
-  createdAt  DateTime          @default(now())
-  updatedAt  DateTime          @updatedAt
-  user       user              @relation(fields: [userId], references: [id])
-  userId     Int               @db.UnsignedInt
-  categories articleCategory[]
+  id           Int               @id @default(autoincrement()) @db.UnsignedInt
+  title        String
+  img          String?
+  file         String?
+  description  String?           @db.Text
+  content      String            @db.Text
+  published    Boolean           @default(false)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  user         user              @relation(fields: [userId], references: [id])
+  userId       Int               @db.UnsignedInt
+  categories   articleCategory[]
+  comments     comment[]
+  like         like[]
+  collection   collection?       @relation(fields: [collectionId], references: [id])
+  collectionId Int?              @db.UnsignedInt
+}
+
+model collection {
+  id       Int       @id @default(autoincrement()) @db.UnsignedInt
+  articles article[]
+  user     user?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId   Int?      @db.UnsignedInt
 }
 
 model articleCategory {
@@ -49,4 +78,37 @@ model articleCategory {
 
   @@id([categoryId, articleId])
   @@map("article_category")
+}
+
+model comment {
+  id        Int      @id @default(autoincrement()) @db.UnsignedInt
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  reply     reply[]
+  article   article? @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  articleId Int?     @db.UnsignedInt
+  user      user?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int?     @db.UnsignedInt
+}
+
+model like {
+  id        Int      @id @default(autoincrement()) @db.UnsignedInt
+  status    Boolean  @default(false)
+  article   article? @relation(fields: [articleId], references: [id])
+  articleId Int?     @db.UnsignedInt
+  user      user?    @relation(fields: [userId], references: [id])
+  userId    Int?     @db.UnsignedInt
+}
+
+model reply {
+  id          Int      @id @default(autoincrement()) @db.UnsignedInt
+  content     String   @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  comment     comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  commentId   Int?     @db.UnsignedInt
+  replySelfId Int?     @db.UnsignedInt
+  user        user?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      Int?     @db.UnsignedInt
 }
