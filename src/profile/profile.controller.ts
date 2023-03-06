@@ -11,8 +11,8 @@ export class ProfileController {
     return this.profileService.findOne(email);
   }
 
-  @Patch(':email')
-  update(@Param('email') email: string, @Body() updateProfileDto: UpdateProfileDto) {
-    return this.profileService.update(+email, updateProfileDto);
-  }
+  // @Patch(':email')
+  // update(@Param('email') email: string, @Body() updateProfileDto: UpdateProfileDto) {
+  //   return this.profileService.update(+email, updateProfileDto);
+  // }
 }

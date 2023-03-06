@@ -7,6 +7,7 @@ import { CategoryModule } from './category/category.module';
 import { UploadModule } from './upload/upload.module';
 import { CaslModule } from './casl/casl.module';
 import { ProfileModule } from './profile/profile.module';
+import { MomentModule } from './moment/moment.module';
 import config from './config';
 
 @Module({
@@ -22,6 +23,7 @@ import config from './config';
     UploadModule,
     CaslModule,
     ProfileModule,
+    MomentModule,
   ],
   controllers: [],
   providers: [],
