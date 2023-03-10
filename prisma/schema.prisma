@@ -26,8 +26,9 @@ model user {
   like          like[]
   comments      comment[]
   reply         reply[]
-  momentLike    momentLike[]
+  momentlikes   momentLike[]
   momentComment momentComment[]
+  momentReply   momentReply[]
 }
 
 model profile {
@@ -79,24 +80,37 @@ model moment {
 }
 
 model momentLike {
-  id       Int     @id @default(autoincrement()) @db.UnsignedInt
-  status   Boolean @default(false)
-  user     user?   @relation(fields: [userId], references: [id])
-  userId   Int?    @db.UnsignedInt
-  moment   moment? @relation(fields: [momentId], references: [id])
-  momentId Int?    @db.UnsignedInt
+  id       Int    @id @default(autoincrement()) @db.UnsignedInt
+  user     user   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId   Int    @db.UnsignedInt 
+  moment   moment @relation(fields: [momentId], references: [id], onDelete: Cascade)
+  momentId Int    @db.UnsignedInt
+
+  @@map("moment_like")
 }
 
 model momentComment {
-  id        Int      @id @default(autoincrement()) @db.UnsignedInt
-  content   String   @db.Text
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  reply     reply[]
-  user      user?    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    Int?     @db.UnsignedInt
-  moment    moment?  @relation(fields: [momentId], references: [id])
-  momentId  Int?     @db.UnsignedInt
+  id        Int           @id @default(autoincrement()) @db.UnsignedInt
+  content   String        @db.Text
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  reply     momentReply[]
+  user      user?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int?          @db.UnsignedInt
+  moment    moment?       @relation(fields: [momentId], references: [id])
+  momentId  Int?          @db.UnsignedInt
+}
+
+model momentReply {
+  id              Int            @id @default(autoincrement()) @db.UnsignedInt
+  content         String         @db.Text
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  replySelfId     Int?           @db.UnsignedInt
+  user            user?          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId          Int?           @db.UnsignedInt
+  momentComment   momentComment? @relation(fields: [momentCommentId], references: [id])
+  momentCommentId Int?           @db.UnsignedInt
 }
 
 model imgs {
@@ -145,15 +159,13 @@ model like {
 }
 
 model reply {
-  id              Int            @id @default(autoincrement()) @db.UnsignedInt
-  content         String         @db.Text
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-  comment         comment?       @relation(fields: [commentId], references: [id], onDelete: Cascade)
-  commentId       Int?           @db.UnsignedInt
-  replySelfId     Int?           @db.UnsignedInt
-  user            user?          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId          Int?           @db.UnsignedInt
-  momentComment   momentComment? @relation(fields: [momentCommentId], references: [id])
-  momentCommentId Int?           @db.UnsignedInt
+  id          Int      @id @default(autoincrement()) @db.UnsignedInt
+  content     String   @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  comment     comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  commentId   Int?     @db.UnsignedInt
+  replySelfId Int?     @db.UnsignedInt
+  user        user?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      Int?     @db.UnsignedInt
 }

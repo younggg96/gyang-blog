@@ -18,8 +18,9 @@ export class MomentController {
   }
 
   @Get()
-  async findAll(@Query('page', new DefaultValuePipe(1)) page: number) {
-    return await this.momentService.findAll(page);
+  @Auth()
+  findAll(@Query('page', new DefaultValuePipe(1)) page: number, @User() user: UserType) {
+    return this.momentService.findAll(page, user);
   }
 
   @Get('/user')
@@ -41,5 +42,17 @@ export class MomentController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.momentService.remove(+id);
+  }
+
+  @Patch('/momentlike/:id')
+  @Auth()
+  addLikeMoment(@Param('id') id: string, @User() user: UserType) {
+    return this.momentService.addLikeMoment(id, user);
+  }
+
+  @Delete('/momentlike/:id')
+  @Auth()
+  removeLikeMoment(@Param('id') id: string, @User() user: UserType) {
+    return this.momentService.removeLikeMoment(id, user);
   }
 }
