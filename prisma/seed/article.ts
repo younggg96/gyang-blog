@@ -11,7 +11,7 @@ export default async () => {
         img: 'https://source.unsplash.com/random/1280x960?sig=' + _.random(1, 100),
         description: Random.paragraph(1, 2),
         content: Random.paragraph(50, 100),
-        userId: Random.integer(1, 11),
+        user: { connect: { id: Random.integer(1, 11) } },
         published: true,
       },
     });

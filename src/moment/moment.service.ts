@@ -11,6 +11,35 @@ import _ from 'lodash';
 export class MomentService {
   constructor(private prisma: PrismaService, private config: ConfigService) {}
 
+  async checkCurUserLike(moments, userId: number) {
+    return await Promise.all(
+      moments.map(async (item) => {
+        const curUserLiked = await this.prisma.momentLike.findFirst({
+          where: {
+            userId,
+            momentId: item.id,
+          },
+        });
+        return {
+          ...item,
+          curUserLiked: !!curUserLiked,
+        };
+      }),
+    );
+  }
+
+  async getMomentsCount() {
+    return await this.prisma.moment.count();
+  }
+
+  async getMomentsCountByUserId(userId: number) {
+    return await this.prisma.moment.count({
+      where: {
+        userId: +userId,
+      },
+    });
+  }
+
   async create(createMomentDto: CreateMomentDto, user: UserType) {
     return await this.prisma.moment.create({
       data: {
@@ -20,7 +49,7 @@ export class MomentService {
     });
   }
 
-  async findAll(p: number, user: UserType) {
+  async findAll(p: number) {
     const page = +p; // sting -> number
     const row = +this.config.get('ARTICLE_PAGE_ROW'); // sting -> number
     const moments = await this.prisma.moment.findMany({
@@ -36,78 +65,133 @@ export class MomentService {
         },
         momentComments: {
           select: {
-            user: true,
+            user: {
+              select: {
+                id: true,
+                avatar: true,
+                username: true,
+              },
+            },
+            userId: true,
+            id: true,
             content: true,
             createdAt: true,
+            reply: {
+              select: {
+                user: {
+                  select: {
+                    id: true,
+                    avatar: true,
+                    username: true,
+                  },
+                },
+                userId: true,
+                id: true,
+                content: true,
+                createdAt: true,
+                momentCommentId: true,
+              },
+            },
+            momentId: true,
           },
         },
         imgs: true,
       },
     });
-    const data = await Promise.all(
-      moments.map(async (item) => {
-        const curUserLiked = await this.prisma.momentLike.findFirst({
-          where: {
-            userId: user.id,
-            momentId: item.id,
-          },
-        });
-        return {
-          ...item,
-          curUserLiked: !!curUserLiked,
-        };
-      }),
-    );
-    const total = await this.prisma.moment.count();
-    return paginate({ page, data, total, row });
+    return paginate({ page, data: moments, total: await this.getMomentsCount(), row });
   }
 
   async findAllByUser(p: number, user: UserType) {
     const page = +p; // sting -> number
     const row = +this.config.get('ARTICLE_PAGE_ROW'); // sting -> number
     const moments = await this.prisma.moment.findMany({
-      where: {
-        userId: user.id,
-      },
       skip: (page - 1) * row,
       take: row,
-      orderBy: {
-        createdAt: 'desc',
-      },
+      orderBy: { id: 'asc' },
       include: {
+        user: {
+          select: { id: true, username: true, avatar: true },
+        },
+        momentlikes: {
+          select: { userId: true, id: true },
+        },
+        momentComments: {
+          select: {
+            user: {
+              select: {
+                id: true,
+                avatar: true,
+                username: true,
+              },
+            },
+            userId: true,
+            id: true,
+            content: true,
+            createdAt: true,
+            reply: {
+              select: {
+                user: {
+                  select: {
+                    id: true,
+                    avatar: true,
+                    username: true,
+                  },
+                },
+                userId: true,
+                id: true,
+                content: true,
+                createdAt: true,
+                momentCommentId: true,
+              },
+            },
+            momentId: true,
+          },
+        },
         imgs: true,
       },
     });
-    const momentsByUser = await this.prisma.moment.findMany({
-      where: {
-        userId: user.id,
-      },
-    });
-    return paginate({ page, data: moments, total: momentsByUser.length, row });
+    const data = await this.checkCurUserLike(moments, user.id);
+    return paginate({ page, data, total: await this.getMomentsCount(), row });
   }
 
   async findAllByUserId(p: number, id: string) {
     const page = +p; // sting -> number
     const row = +this.config.get('ARTICLE_PAGE_ROW'); // sting -> number
-    const articles = await this.prisma.moment.findMany({
+    const momentsByUser = await this.prisma.moment.findMany({
       where: {
         userId: +id,
       },
       skip: (page - 1) * row,
       take: row,
-      orderBy: {
-        createdAt: 'desc',
-      },
+      orderBy: { id: 'asc' },
       include: {
+        user: {
+          select: { id: true, username: true, avatar: true },
+        },
+        momentlikes: {
+          select: { userId: true, id: true },
+        },
+        momentComments: {
+          select: {
+            user: {
+              select: {
+                id: true,
+                avatar: true,
+                username: true,
+              },
+            },
+            userId: true,
+            id: true,
+            content: true,
+            createdAt: true,
+            reply: true,
+            momentId: true,
+          },
+        },
         imgs: true,
       },
     });
-    const momentsByUser = await this.prisma.moment.findMany({
-      where: {
-        userId: +id,
-      },
-    });
-    return paginate({ page, data: articles, total: momentsByUser.length, row });
+    return paginate({ page, data: momentsByUser, total: await this.getMomentsCountByUserId(+id), row });
   }
 
   update(id: number, updateMomentDto: UpdateMomentDto) {

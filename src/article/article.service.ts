@@ -40,6 +40,17 @@ export class ArticleService {
           select: { id: true, username: true, avatar: true },
         },
         categories: true,
+        comments: {
+          where: {
+            parentId: null,
+          },
+          include: {
+            user: {
+              select: { id: true, username: true, avatar: true },
+            },
+            _count: true,
+          },
+        },
       },
     });
     const total = await this.prisma.article.count();
@@ -58,13 +69,34 @@ export class ArticleService {
       orderBy: {
         createdAt: 'desc',
       },
+      include: {
+        categories: true,
+        comments: {
+          where: {
+            parentId: null,
+          },
+          include: {
+            replies: {
+              select: {
+                id: true,
+                createdAt: true,
+                user: true,
+                content: true,
+              },
+            },
+            user: {
+              select: { id: true, username: true, avatar: true },
+            },
+          },
+        },
+      },
     });
-    const articlesByUser = await this.prisma.article.findMany({
+    const articlesByUserCount = await this.prisma.article.count({
       where: {
         userId: user.id,
       },
     });
-    return paginate({ page, data: articles, total: articlesByUser.length, row });
+    return paginate({ page, data: articles, total: articlesByUserCount, row });
   }
 
   async findAllByUserId(p: number, id: string) {
@@ -79,13 +111,34 @@ export class ArticleService {
       orderBy: {
         createdAt: 'desc',
       },
+      include: {
+        categories: true,
+        comments: {
+          where: {
+            parentId: null,
+          },
+          include: {
+            replies: {
+              select: {
+                id: true,
+                createdAt: true,
+                user: true,
+                content: true,
+              },
+            },
+            user: {
+              select: { id: true, username: true, avatar: true },
+            },
+          },
+        },
+      },
     });
-    const articlesByUser = await this.prisma.article.findMany({
+    const articlesByUserCount = await this.prisma.article.count({
       where: {
         userId: +id,
       },
     });
-    return paginate({ page, data: articles, total: articlesByUser.length, row });
+    return paginate({ page, data: articles, total: articlesByUserCount, row });
   }
 
   async findAllByCategoryId(p: number, id: string) {
@@ -109,18 +162,37 @@ export class ArticleService {
   }
 
   async findOne(id: number) {
-    await sleep(3000);
-    return await this.prisma.article.findFirst({
+    const data = await this.prisma.article.findUnique({
       where: {
         id,
       },
       include: {
         user: {
-          select: { id: true, username: true, avatar: true, email: true },
+          select: { id: true, username: true, avatar: true },
         },
         categories: true,
+        comments: {
+          where: {
+            parentId: null,
+          },
+          take: 3,
+          include: {
+            user: {
+              select: { id: true, username: true, avatar: true },
+            },
+            _count: true,
+          },
+        },
       },
     });
+
+    const commentCount = await this.prisma.comment.count({
+      where: {
+        articleId: id,
+      },
+    });
+
+    return { ...data, commentCount };
   }
 
   async update(id: number, updateArticleDto: UpdateArticleDto) {

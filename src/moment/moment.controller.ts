@@ -18,9 +18,8 @@ export class MomentController {
   }
 
   @Get()
-  @Auth()
-  findAll(@Query('page', new DefaultValuePipe(1)) page: number, @User() user: UserType) {
-    return this.momentService.findAll(page, user);
+  findAll(@Query('page', new DefaultValuePipe(1)) page: number) {
+    return this.momentService.findAll(page);
   }
 
   @Get('/user')

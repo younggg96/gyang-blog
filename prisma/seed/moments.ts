@@ -8,7 +8,7 @@ export default async () => {
     await prisma.moment.create({
       data: {
         content: Random.paragraph(1, 3),
-        userId: Random.integer(1, 11),
+        user: { connect: { id: Random.integer(1, 11) } },
       },
     });
   });
@@ -31,6 +31,26 @@ export default async () => {
       },
     });
   });
+  // moment replies
+  await create(120, async (prisma: PrismaClient) => {
+    await prisma.momentReply.create({
+      data: {
+        content: Random.paragraph(1, 2),
+        userId: Random.integer(1, 11),
+        momentCommentId: Random.integer(1, 120),
+      },
+    });
+  });
+  // await create(120, async (prisma: PrismaClient) => {
+  //   await prisma.momentReply.create({
+  //     data: {
+  //       content: Random.paragraph(1, 2),
+  //       userId: Random.integer(1, 11),
+  //       momentReplyId: Random.integer(1, 180),
+  //       momentCommentId: Random.integer(1, 120),
+  //     },
+  //   });
+  // });
   // moment likes
   await create(100, async (prisma: PrismaClient) => {
     const momentId = Random.integer(1, 60);

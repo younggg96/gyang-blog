@@ -25,7 +25,6 @@ model user {
   collections   collection[]
   like          like[]
   comments      comment[]
-  reply         reply[]
   momentlikes   momentLike[]
   momentComment momentComment[]
   momentReply   momentReply[]
@@ -67,6 +66,31 @@ model article {
   collectionId Int?              @db.UnsignedInt
 }
 
+model comment {
+  id        Int       @id @default(autoincrement()) @db.UnsignedInt
+  content   String    @db.Text
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  article   article?  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  articleId Int?      @db.UnsignedInt
+  user      user?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int?      @db.UnsignedInt
+  parent    comment?  @relation("ChildComments", fields: [parentId], references: [id])
+  parentId  Int?      @db.UnsignedInt
+  replies   comment[] @relation("ChildComments")
+  replyTo   Int?
+}
+
+model like {
+  id        Int      @id @default(autoincrement()) @db.UnsignedInt
+  article   article? @relation(fields: [articleId], references: [id])
+  articleId Int?     @db.UnsignedInt
+  user      user?    @relation(fields: [userId], references: [id])
+  userId    Int?     @db.UnsignedInt
+
+  @@map("article_like")
+}
+
 model moment {
   id             Int             @id @default(autoincrement()) @db.UnsignedInt
   content        String          @db.Text
@@ -82,7 +106,7 @@ model moment {
 model momentLike {
   id       Int    @id @default(autoincrement()) @db.UnsignedInt
   user     user   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId   Int    @db.UnsignedInt 
+  userId   Int    @db.UnsignedInt
   moment   moment @relation(fields: [momentId], references: [id], onDelete: Cascade)
   momentId Int    @db.UnsignedInt
 
@@ -106,7 +130,7 @@ model momentReply {
   content         String         @db.Text
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
-  replySelfId     Int?           @db.UnsignedInt
+  momentReplyId   Int?           @db.UnsignedInt
   user            user?          @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId          Int?           @db.UnsignedInt
   momentComment   momentComment? @relation(fields: [momentCommentId], references: [id])
@@ -135,37 +159,4 @@ model articleCategory {
 
   @@id([categoryId, articleId])
   @@map("article_category")
-}
-
-model comment {
-  id        Int      @id @default(autoincrement()) @db.UnsignedInt
-  content   String   @db.Text
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  reply     reply[]
-  article   article? @relation(fields: [articleId], references: [id], onDelete: Cascade)
-  articleId Int?     @db.UnsignedInt
-  user      user?    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    Int?     @db.UnsignedInt
-}
-
-model like {
-  id        Int      @id @default(autoincrement()) @db.UnsignedInt
-  status    Boolean  @default(false)
-  article   article? @relation(fields: [articleId], references: [id])
-  articleId Int?     @db.UnsignedInt
-  user      user?    @relation(fields: [userId], references: [id])
-  userId    Int?     @db.UnsignedInt
-}
-
-model reply {
-  id          Int      @id @default(autoincrement()) @db.UnsignedInt
-  content     String   @db.Text
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  comment     comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
-  commentId   Int?     @db.UnsignedInt
-  replySelfId Int?     @db.UnsignedInt
-  user        user?    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId      Int?     @db.UnsignedInt
 }
