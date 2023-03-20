@@ -168,7 +168,7 @@ export class ArticleService {
       },
       include: {
         user: {
-          select: { id: true, username: true, avatar: true },
+          select: { id: true, username: true, avatar: true, email: true },
         },
         categories: true,
         comments: {

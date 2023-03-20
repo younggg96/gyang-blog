@@ -52,7 +52,6 @@ export class CommentService {
         user: {
           select: { id: true, username: true, avatar: true },
         },
-        parent: true,
         _count: true,
       },
     });
