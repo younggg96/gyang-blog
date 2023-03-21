@@ -3,12 +3,52 @@ import { CreateCommentDto } from './dto/create-comment.dto';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { paginate } from 'src/helper/helper';
+import { user as UserType } from '@prisma/client';
 
 @Injectable()
 export class CommentService {
   constructor(private prisma: PrismaService, private config: ConfigService) {}
-  create(createCommentDto: CreateCommentDto) {
-    return 'This action adds a new comment';
+
+  async create(createCommentDto: CreateCommentDto, user: UserType) {
+    return await this.prisma.comment.create({
+      data: {
+        user: {
+          connect: {
+            id: user.id,
+          },
+        },
+        article: {
+          connect: {
+            id: +createCommentDto.articleId,
+          },
+        },
+        content: createCommentDto.content,
+      },
+    });
+  }
+
+  async createReply(createCommentDto: CreateCommentDto, user: UserType) {
+    return await this.prisma.comment.create({
+      data: {
+        user: {
+          connect: {
+            id: user.id,
+          },
+        },
+        parent: {
+          connect: {
+            id: +createCommentDto.parentId,
+          },
+        },
+        article: {
+          connect: {
+            id: +createCommentDto.articleId,
+          },
+        },
+        content: createCommentDto.content,
+        replyTo: +createCommentDto.replyTo,
+      },
+    });
   }
 
   findAll() {

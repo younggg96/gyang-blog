@@ -5,7 +5,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 
 import { user as UserType } from '@prisma/client';
-import { paginate, sleep } from 'src/helper/helper';
+import { paginate } from 'src/helper/helper';
 import _ from 'lodash';
 
 @Injectable()
