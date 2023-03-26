@@ -9,6 +9,7 @@ import { CaslModule } from './casl/casl.module';
 import { ProfileModule } from './profile/profile.module';
 import { MomentModule } from './moment/moment.module';
 import { CommentModule } from './comment/comment.module';
+import { ChatGptModule } from './chat-gpt/chat-gpt.module';
 import config from './config';
 
 @Module({
@@ -26,6 +27,7 @@ import config from './config';
     ProfileModule,
     MomentModule,
     CommentModule,
+    ChatGptModule,
   ],
   controllers: [],
   providers: [],

@@ -5,14 +5,16 @@ import { DefaultValuePipe } from '@nestjs/common/pipes';
 import { user as UserType } from '@prisma/client';
 import { User } from 'src/auth/decorator/user.decorator';
 import { Auth } from 'src/auth/decorator/auth.decorator';
+import { ArticleService } from 'src/article/article.service';
 @Controller('comment')
 export class CommentController {
-  constructor(private readonly commentService: CommentService) {}
+  constructor(private readonly commentService: CommentService, private readonly articleService: ArticleService) {}
 
   @Post('/createComment')
   @Auth()
-  create(@Body() createCommentDto: CreateCommentDto, @User() user: UserType) {
-    return this.commentService.create(createCommentDto, user);
+  async create(@Body() createCommentDto: CreateCommentDto, @User() user: UserType) {
+    const newComment = await this.commentService.create(createCommentDto, user);
+    return await this.articleService.findOne(newComment.articleId);
   }
 
   @Post('/createReply')

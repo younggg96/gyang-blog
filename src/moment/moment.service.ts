@@ -98,6 +98,7 @@ export class MomentService {
         imgs: true,
       },
     });
+    await sleep(2000);
     return paginate({ page, data: moments, total: await this.getMomentsCount(), row });
   }
 
@@ -151,6 +152,7 @@ export class MomentService {
       },
     });
     const data = await this.checkCurUserLike(moments, user.id);
+    await sleep(2000);
     return paginate({ page, data, total: await this.getMomentsCount(), row });
   }
 

@@ -175,6 +175,9 @@ export class ArticleService {
           where: {
             parentId: null,
           },
+          orderBy: {
+            createdAt: 'desc',
+          },
           take: 3,
           include: {
             user: {
