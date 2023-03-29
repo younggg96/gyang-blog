@@ -12,6 +12,31 @@ import _ from 'lodash';
 export class ArticleService {
   constructor(private prisma: PrismaService, private config: ConfigService) {}
 
+  async checkCurUserLike(articleId: number, userId: number) {
+    return !!(await this.prisma.like.findFirst({
+      where: {
+        userId,
+        articleId,
+      },
+    }));
+  }
+
+  async articleLikeCount(articleId: number) {
+    return await this.prisma.like.count({
+      where: {
+        articleId,
+      },
+    });
+  }
+
+  async getCommentCount(articleId) {
+    return await this.prisma.comment.count({
+      where: {
+        articleId,
+      },
+    });
+  }
+
   async create(createArticleDto: CreateArticleDto, user: UserType) {
     return await this.prisma.article.create({
       data: {
@@ -170,6 +195,7 @@ export class ArticleService {
         user: {
           select: { id: true, username: true, avatar: true, email: true },
         },
+        like: true,
         categories: true,
         comments: {
           where: {
@@ -189,13 +215,94 @@ export class ArticleService {
       },
     });
 
-    const commentCount = await this.prisma.comment.count({
+    const commentCount = await this.getCommentCount(id);
+
+    return { ...data, commentCount, curUserLiked: null };
+  }
+
+  async findOneByUser(id: number, user: UserType) {
+    const data = await this.prisma.article.findUnique({
       where: {
-        articleId: id,
+        id,
+      },
+      include: {
+        user: {
+          select: { id: true, username: true, avatar: true, email: true },
+        },
+        categories: true,
+        comments: {
+          where: {
+            parentId: null,
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+          take: 3,
+          include: {
+            user: {
+              select: { id: true, username: true, avatar: true },
+            },
+            _count: true,
+          },
+        },
       },
     });
 
-    return { ...data, commentCount };
+    const commentCount = await this.getCommentCount(id);
+    const curUserLiked = await this.checkCurUserLike(id, user.id);
+    const articleLikeCount = await this.articleLikeCount(id);
+
+    return { ...data, commentCount, curUserLiked, articleLikeCount };
+  }
+
+  async addLike(id: string, user: UserType) {
+    const existLike = await this.prisma.like.findFirst({
+      where: {
+        id: +id,
+        userId: user.id,
+      },
+    });
+    if (!existLike) {
+      await this.prisma.like.create({
+        data: {
+          articleId: +id,
+          userId: user.id,
+        },
+      });
+      const count = await this.prisma.like.count({
+        where: {
+          articleId: +id,
+        },
+      });
+      return {
+        count,
+        success: 'Like success!',
+      };
+    }
+  }
+
+  async removeLike(id: string) {
+    const existLike = await this.prisma.like.findUnique({
+      where: {
+        id: +id,
+      },
+    });
+    if (!!existLike) {
+      await this.prisma.like.delete({
+        where: {
+          id: +existLike.id,
+        },
+      });
+      const count = await this.prisma.like.count({
+        where: {
+          id: +id,
+        },
+      });
+      return {
+        count,
+        success: 'Unlike success!',
+      };
+    }
   }
 
   async update(id: number, updateArticleDto: UpdateArticleDto) {

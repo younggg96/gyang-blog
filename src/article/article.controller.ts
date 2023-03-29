@@ -55,6 +55,12 @@ export class ArticleController {
     return this.articleService.findOne(+id);
   }
 
+  @Get('/user/:id')
+  @Auth()
+  findOneByUser(@Param('id') id: string, @User() user: UserType) {
+    return this.articleService.findOneByUser(+id, user);
+  }
+
   @Patch(':id')
   @Policy({ action: 'update', type: 'article' })
   update(@Param('id') id: string, @Body() updateArticleDto: UpdateArticleDto) {
@@ -65,5 +71,16 @@ export class ArticleController {
   @Policy({ action: 'delete', type: 'article' })
   remove(@Param('id') id: string) {
     return this.articleService.remove(+id);
+  }
+
+  @Patch('/momentlike/:id')
+  @Auth()
+  addLikeMoment(@Param('id') id: string, @User() user: UserType) {
+    return this.articleService.addLike(id, user);
+  }
+
+  @Delete('/momentlike/:id')
+  removeLikeMoment(@Param('id') id: string) {
+    return this.articleService.removeLike(id);
   }
 }

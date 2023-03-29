@@ -16,4 +16,22 @@ export default async () => {
       },
     });
   });
+  await create(100, async (prisma: PrismaClient) => {
+    const articleId = Random.integer(1, 135);
+    const userId = Random.integer(1, 11);
+    const existLike = await prisma.like.findFirst({
+      where: {
+        articleId,
+        userId,
+      },
+    });
+    if (!existLike) {
+      await prisma.like.create({
+        data: {
+          articleId,
+          userId,
+        },
+      });
+    }
+  });
 };

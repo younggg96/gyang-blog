@@ -21,7 +21,6 @@ export class PolicyGuard implements CanActivate {
     const { action, type } = this.reflector.get<POLICY_CONFIG>(POLICY_KEY, context.getHandler());
     //得到当前登录用户
     const { user, params } = context.switchToHttp().getRequest();
-    console.log(user, params, action, type);
     //管理员直接通过验证
     if (user.role == Role.ADMIN) return true;
     //从配置文件config/policy中获取策略

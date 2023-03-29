@@ -227,11 +227,6 @@ export class MomentService {
         count,
         success: 'Like moment success!',
       };
-    } else {
-      return {
-        count: -1,
-        success: 'Like moment failed!',
-      };
     }
   }
 
@@ -256,11 +251,6 @@ export class MomentService {
       return {
         count,
         success: 'Unlike moment success!',
-      };
-    } else {
-      return {
-        count: -1,
-        success: 'Unlike moment failed!',
       };
     }
   }

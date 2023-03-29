@@ -87,6 +87,8 @@ model like {
   articleId Int?     @db.UnsignedInt
   user      user?    @relation(fields: [userId], references: [id])
   userId    Int?     @db.UnsignedInt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt @default(now())
 
   @@map("article_like")
 }
