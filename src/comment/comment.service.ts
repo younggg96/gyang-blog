@@ -2,15 +2,16 @@ import { Injectable } from '@nestjs/common';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { paginate } from 'src/helper/helper';
+import { ArticleService } from 'src/article/article.service';
+import { paginate, sleep } from 'src/helper/helper';
 import { user as UserType } from '@prisma/client';
 
 @Injectable()
 export class CommentService {
-  constructor(private prisma: PrismaService, private config: ConfigService) {}
+  constructor(private prisma: PrismaService, private config: ConfigService, private articleService: ArticleService) {}
 
   async create(createCommentDto: CreateCommentDto, user: UserType) {
-    return await this.prisma.comment.create({
+    const newComment = await this.prisma.comment.create({
       data: {
         user: {
           connect: {
@@ -25,10 +26,11 @@ export class CommentService {
         content: createCommentDto.content,
       },
     });
+    return await this.articleService.findOneByUser(+newComment.articleId, user);
   }
 
   async createReply(createCommentDto: CreateCommentDto, user: UserType) {
-    return await this.prisma.comment.create({
+    const newComment = await this.prisma.comment.create({
       data: {
         user: {
           connect: {
@@ -46,9 +48,10 @@ export class CommentService {
           },
         },
         content: createCommentDto.content,
-        replyTo: +createCommentDto.replyTo,
+        replyTo: +createCommentDto.replyTo || null,
       },
     });
+    return await this.articleService.findOneByUser(+newComment.articleId, user);
   }
 
   findAll() {
@@ -76,17 +79,56 @@ export class CommentService {
     });
   }
 
+  async findComments(p: number, r: number, articleId: string) {
+    const page = +p; // sting -> number
+    const row = +r;
+    await sleep(1000);
+    const comments = await this.prisma.comment.findMany({
+      where: {
+        articleId: +articleId,
+        parentId: null,
+      },
+      take: page * row,
+      orderBy: {
+        createdAt: 'desc',
+      },
+      include: {
+        user: {
+          select: { id: true, username: true, avatar: true },
+        },
+        _count: true,
+      },
+    });
+    const total = await this.prisma.comment.count({
+      where: {
+        articleId: +articleId,
+        parentId: null,
+      },
+    });
+
+    const data = await Promise.all(
+      comments.map(async (item) => {
+        return {
+          ...item,
+          replyToComment: item.replyTo ? await this.findReplyToComment(item.replyTo) : null,
+        };
+      }),
+    );
+
+    return { ...paginate({ page, data, total, row }), hasMore: comments.length < total };
+  }
+
   async findChildrenComments(p: number, r: number, parentId: string) {
     const page = +p; // sting -> number
     const row = +r;
+    await sleep(1000);
     const childrenComments = await this.prisma.comment.findMany({
       where: {
         parentId: +parentId,
       },
-      skip: (page - 1) * row,
-      take: row,
+      take: page * row,
       orderBy: {
-        createdAt: 'asc',
+        createdAt: 'desc',
       },
       include: {
         user: {
@@ -111,6 +153,6 @@ export class CommentService {
       },
     });
 
-    return paginate({ page, data, total, row });
+    return { ...paginate({ page, data, total, row }), hasMore: childrenComments.length < total };
   }
 }

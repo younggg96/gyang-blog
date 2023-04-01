@@ -5,7 +5,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 
 import { user as UserType } from '@prisma/client';
-import { paginate } from 'src/helper/helper';
+import { paginate, sleep } from 'src/helper/helper';
 import _ from 'lodash';
 
 @Injectable()
@@ -204,7 +204,7 @@ export class ArticleService {
           orderBy: {
             createdAt: 'desc',
           },
-          take: 3,
+          take: 5,
           include: {
             user: {
               select: { id: true, username: true, avatar: true },
@@ -212,6 +212,7 @@ export class ArticleService {
             _count: true,
           },
         },
+        _count: true,
       },
     });
 
@@ -237,7 +238,7 @@ export class ArticleService {
           orderBy: {
             createdAt: 'desc',
           },
-          take: 3,
+          take: 5,
           include: {
             user: {
               select: { id: true, username: true, avatar: true },
@@ -245,6 +246,7 @@ export class ArticleService {
             _count: true,
           },
         },
+        _count: true,
       },
     });
 
@@ -262,6 +264,7 @@ export class ArticleService {
         userId: user.id,
       },
     });
+    await sleep(1000);
     if (!existLike) {
       await this.prisma.like.create({
         data: {
@@ -276,17 +279,19 @@ export class ArticleService {
       });
       return {
         count,
-        success: 'Like success!',
+        success: 'Like article success!',
       };
     }
   }
 
-  async removeLike(id: string) {
-    const existLike = await this.prisma.like.findUnique({
+  async removeLike(id: string, user: UserType) {
+    const existLike = await this.prisma.like.findFirst({
       where: {
-        id: +id,
+        articleId: +id,
+        userId: user.id,
       },
     });
+    await sleep(1000);
     if (!!existLike) {
       await this.prisma.like.delete({
         where: {
@@ -300,7 +305,7 @@ export class ArticleService {
       });
       return {
         count,
-        success: 'Unlike success!',
+        success: 'Unlike article success!',
       };
     }
   }

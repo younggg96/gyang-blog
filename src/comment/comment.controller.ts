@@ -13,8 +13,7 @@ export class CommentController {
   @Post('/createComment')
   @Auth()
   async create(@Body() createCommentDto: CreateCommentDto, @User() user: UserType) {
-    const newComment = await this.commentService.create(createCommentDto, user);
-    return await this.articleService.findOne(newComment.articleId);
+    return await this.commentService.create(createCommentDto, user);
   }
 
   @Post('/createReply')
@@ -26,6 +25,15 @@ export class CommentController {
   @Get()
   findAll() {
     return this.commentService.findAll();
+  }
+
+  @Get('/getCommentsByArticleId/:id')
+  findComments(
+    @Query('page', new DefaultValuePipe(1)) page: number,
+    @Query('row', new DefaultValuePipe(1)) row: number,
+    @Param('id') id: string,
+  ) {
+    return this.commentService.findComments(page, row, id);
   }
 
   @Get(':id')

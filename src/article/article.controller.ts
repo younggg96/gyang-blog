@@ -73,14 +73,15 @@ export class ArticleController {
     return this.articleService.remove(+id);
   }
 
-  @Patch('/momentlike/:id')
+  @Patch('/like/:id')
   @Auth()
   addLikeMoment(@Param('id') id: string, @User() user: UserType) {
     return this.articleService.addLike(id, user);
   }
 
-  @Delete('/momentlike/:id')
-  removeLikeMoment(@Param('id') id: string) {
-    return this.articleService.removeLike(id);
+  @Delete('/like/:id')
+  @Auth()
+  removeLikeMoment(@Param('id') id: string, @User() user: UserType) {
+    return this.articleService.removeLike(id, user);
   }
 }
