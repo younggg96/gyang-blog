@@ -12,6 +12,23 @@ import _ from 'lodash';
 export class ArticleService {
   constructor(private prisma: PrismaService, private config: ConfigService) {}
 
+  async checkCurUserLikeComment(comments, userId: number) {
+    return await Promise.all(
+      comments.map(async (item) => {
+        const curUserLiked = await this.prisma.commentLike.findFirst({
+          where: {
+            userId,
+            commentId: item.id,
+          },
+        });
+        return {
+          ...item,
+          curUserLiked: !!curUserLiked,
+        };
+      }),
+    );
+  }
+
   async checkCurUserLike(articleId: number, userId: number) {
     return !!(await this.prisma.like.findFirst({
       where: {
@@ -209,6 +226,7 @@ export class ArticleService {
             user: {
               select: { id: true, username: true, avatar: true },
             },
+            commentLikes: true,
             _count: true,
           },
         },
@@ -240,6 +258,7 @@ export class ArticleService {
           },
           take: 5,
           include: {
+            commentLikes: true,
             user: {
               select: { id: true, username: true, avatar: true },
             },
@@ -250,11 +269,12 @@ export class ArticleService {
       },
     });
 
+    const comments = await this.checkCurUserLikeComment(data.comments, user.id);
     const commentCount = await this.getCommentCount(id);
     const curUserLiked = await this.checkCurUserLike(id, user.id);
     const articleLikeCount = await this.articleLikeCount(id);
 
-    return { ...data, commentCount, curUserLiked, articleLikeCount };
+    return { ...data, comments, commentCount, curUserLiked, articleLikeCount };
   }
 
   async addLike(id: string, user: UserType) {

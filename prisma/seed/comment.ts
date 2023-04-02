@@ -32,4 +32,22 @@ export default async () => {
       });
     }
   });
+  await create(100, async (prisma: PrismaClient) => {
+    const commentId = Random.integer(1, 500);
+    const userId = Random.integer(1, 11);
+    const existLike = await prisma.commentLike.findFirst({
+      where: {
+        commentId,
+        userId,
+      },
+    });
+    if (!existLike) {
+      await prisma.commentLike.create({
+        data: {
+          commentId,
+          userId,
+        },
+      });
+    }
+  });
 };

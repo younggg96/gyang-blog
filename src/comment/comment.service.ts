@@ -54,10 +54,6 @@ export class CommentService {
     return await this.articleService.findOneByUser(+newComment.articleId, user);
   }
 
-  findAll() {
-    return `This action returns all comment`;
-  }
-
   async findOne(id: number) {
     return await this.prisma.comment.findUnique({
       where: {
@@ -79,7 +75,7 @@ export class CommentService {
     });
   }
 
-  async findComments(p: number, r: number, articleId: string) {
+  async findComments(p: number, r: number, articleId: string, user: UserType) {
     const page = +p; // sting -> number
     const row = +r;
     await sleep(1000);
@@ -93,12 +89,14 @@ export class CommentService {
         createdAt: 'desc',
       },
       include: {
+        commentLikes: true,
         user: {
           select: { id: true, username: true, avatar: true },
         },
         _count: true,
       },
     });
+
     const total = await this.prisma.comment.count({
       where: {
         articleId: +articleId,
@@ -108,8 +106,15 @@ export class CommentService {
 
     const data = await Promise.all(
       comments.map(async (item) => {
+        const curUserLiked = await this.prisma.commentLike.findFirst({
+          where: {
+            userId: user.id,
+            commentId: item.id,
+          },
+        });
         return {
           ...item,
+          curUserLiked: !!curUserLiked,
           replyToComment: item.replyTo ? await this.findReplyToComment(item.replyTo) : null,
         };
       }),
@@ -118,7 +123,7 @@ export class CommentService {
     return { ...paginate({ page, data, total, row }), hasMore: comments.length < total };
   }
 
-  async findChildrenComments(p: number, r: number, parentId: string) {
+  async findChildrenComments(p: number, r: number, parentId: string, user: UserType) {
     const page = +p; // sting -> number
     const row = +r;
     await sleep(1000);
@@ -131,6 +136,7 @@ export class CommentService {
         createdAt: 'desc',
       },
       include: {
+        commentLikes: true,
         user: {
           select: { id: true, username: true, avatar: true },
         },
@@ -140,8 +146,15 @@ export class CommentService {
 
     const data = await Promise.all(
       childrenComments.map(async (item) => {
+        const curUserLiked = await this.prisma.commentLike.findFirst({
+          where: {
+            userId: user.id,
+            commentId: item.id,
+          },
+        });
         return {
           ...item,
+          curUserLiked: !!curUserLiked,
           replyToComment: item.replyTo ? await this.findReplyToComment(item.replyTo) : null,
         };
       }),
@@ -154,5 +167,56 @@ export class CommentService {
     });
 
     return { ...paginate({ page, data, total, row }), hasMore: childrenComments.length < total };
+  }
+
+  async addLike(id: string, user: UserType) {
+    const existLike = await this.prisma.commentLike.findFirst({
+      where: {
+        commentId: +id,
+        userId: user.id,
+      },
+    });
+    if (!existLike) {
+      await this.prisma.commentLike.create({
+        data: {
+          commentId: +id,
+          userId: user.id,
+        },
+      });
+      const count = await this.prisma.commentLike.count({
+        where: {
+          commentId: +id,
+        },
+      });
+      return {
+        count,
+        success: 'Like success!',
+      };
+    }
+  }
+
+  async removeLike(id: string, user: UserType) {
+    const existLike = await this.prisma.commentLike.findFirst({
+      where: {
+        commentId: +id,
+        userId: user.id,
+      },
+    });
+    if (existLike) {
+      await this.prisma.commentLike.delete({
+        where: {
+          id: +existLike.id,
+        },
+      });
+      const count = await this.prisma.commentLike.count({
+        where: {
+          commentId: +id,
+        },
+      });
+      return {
+        count,
+        success: 'Unlike success!',
+      };
+    }
   }
 }
