@@ -67,7 +67,7 @@ export class CommentService {
       where: {
         id: +id,
       },
-      select: {
+      include: {
         user: {
           select: { id: true, username: true, avatar: true },
         },
