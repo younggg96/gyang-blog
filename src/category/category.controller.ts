@@ -15,7 +15,6 @@ export class CategoryController {
   }
 
   @Get()
-  @Auth()
   findAll() {
     return this.categoryService.findAll();
   }
