@@ -6,9 +6,9 @@ import moments from './seed/moments';
 
 async function run() {
   await user();
+  await category();
   await article();
   await moments();
-  await category();
   await comment();
 }
 

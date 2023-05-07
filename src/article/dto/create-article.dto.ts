@@ -5,9 +5,11 @@ export class CreateArticleDto {
   title: string;
   @IsNotEmpty({ message: "content couldn't be empty" })
   content: string;
+  @IsNotEmpty({ message: "description couldn't be empty" })
+  description: string;
   @IsNotEmpty({
     message: "category couldn't be empty",
   })
-  categoryId: number;
+  categoryIds: number[];
   img: string;
 }

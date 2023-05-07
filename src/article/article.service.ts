@@ -54,20 +54,34 @@ export class ArticleService {
     });
   }
 
+  async createArticleCategory(categoryId, articleId) {
+    await this.prisma.articleCategory.create({
+      data: {
+        categoryId,
+        articleId,
+      },
+    });
+  }
+
   async create(createArticleDto: CreateArticleDto, user: UserType) {
-    return await this.prisma.article.create({
+    const article = await this.prisma.article.create({
       data: {
         title: createArticleDto.title,
         content: createArticleDto.content,
+        description: createArticleDto.description,
         img: createArticleDto.img,
-        userId: user.id,
+        user: {
+          connect: { id: user.id },
+        },
         categories: {
-          create: {
-            categoryId: +createArticleDto.categoryId,
+          createMany: {
+            skipDuplicates: true,
+            data: createArticleDto.categoryIds.map((id) => ({ categoryId: id })),
           },
         },
       },
     });
+    return article;
   }
 
   async findAll(p: number) {

@@ -63,16 +63,27 @@ CREATE TABLE `comment` (
     `articleId` INTEGER UNSIGNED NULL,
     `userId` INTEGER UNSIGNED NULL,
     `parentId` INTEGER UNSIGNED NULL,
+    `replyTo` INTEGER NULL,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `like` (
+CREATE TABLE `comment_like` (
     `id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
-    `status` BOOLEAN NOT NULL DEFAULT false,
+    `userId` INTEGER UNSIGNED NOT NULL,
+    `commentId` INTEGER UNSIGNED NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `article_like` (
+    `id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
     `articleId` INTEGER UNSIGNED NULL,
     `userId` INTEGER UNSIGNED NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -141,10 +152,11 @@ CREATE TABLE `collection` (
 
 -- CreateTable
 CREATE TABLE `article_category` (
+    `id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
     `categoryId` INTEGER UNSIGNED NOT NULL,
     `articleId` INTEGER UNSIGNED NOT NULL,
 
-    PRIMARY KEY (`categoryId`, `articleId`)
+    PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateIndex
@@ -169,10 +181,16 @@ ALTER TABLE `comment` ADD CONSTRAINT `comment_userId_fkey` FOREIGN KEY (`userId`
 ALTER TABLE `comment` ADD CONSTRAINT `comment_parentId_fkey` FOREIGN KEY (`parentId`) REFERENCES `comment`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `like` ADD CONSTRAINT `like_articleId_fkey` FOREIGN KEY (`articleId`) REFERENCES `article`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE `comment_like` ADD CONSTRAINT `comment_like_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `like` ADD CONSTRAINT `like_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE `comment_like` ADD CONSTRAINT `comment_like_commentId_fkey` FOREIGN KEY (`commentId`) REFERENCES `comment`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `article_like` ADD CONSTRAINT `article_like_articleId_fkey` FOREIGN KEY (`articleId`) REFERENCES `article`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `article_like` ADD CONSTRAINT `article_like_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `moment` ADD CONSTRAINT `moment_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
