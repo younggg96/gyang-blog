@@ -63,42 +63,26 @@ export class MomentService {
         momentlikes: {
           select: { userId: true, id: true },
         },
-        momentComments: {
-          select: {
-            user: {
-              select: {
-                id: true,
-                avatar: true,
-                username: true,
-              },
-            },
-            userId: true,
-            id: true,
-            content: true,
-            createdAt: true,
-            reply: {
-              select: {
-                user: {
-                  select: {
-                    id: true,
-                    avatar: true,
-                    username: true,
-                  },
-                },
-                userId: true,
-                id: true,
-                content: true,
-                createdAt: true,
-                momentCommentId: true,
-              },
-            },
-            momentId: true,
-          },
-        },
+        // momentComments: {
+        //   select: {
+        //     user: {
+        //       select: {
+        //         id: true,
+        //         avatar: true,
+        //         username: true,
+        //       },
+        //     },
+        //     userId: true,
+        //     id: true,
+        //     content: true,
+        //     createdAt: true,
+        //     momentId: true,
+        //   },
+        // },
         imgs: true,
+        _count: true,
       },
     });
-    await sleep(2000);
     return paginate({ page, data: moments, total: await this.getMomentsCount(), row });
   }
 
@@ -116,43 +100,27 @@ export class MomentService {
         momentlikes: {
           select: { userId: true, id: true },
         },
-        momentComments: {
-          select: {
-            user: {
-              select: {
-                id: true,
-                avatar: true,
-                username: true,
-              },
-            },
-            userId: true,
-            id: true,
-            content: true,
-            createdAt: true,
-            reply: {
-              select: {
-                user: {
-                  select: {
-                    id: true,
-                    avatar: true,
-                    username: true,
-                  },
-                },
-                userId: true,
-                id: true,
-                content: true,
-                createdAt: true,
-                momentCommentId: true,
-              },
-            },
-            momentId: true,
-          },
-        },
+        // momentComments: {
+        //   select: {
+        //     user: {
+        //       select: {
+        //         id: true,
+        //         avatar: true,
+        //         username: true,
+        //       },
+        //     },
+        //     userId: true,
+        //     id: true,
+        //     content: true,
+        //     createdAt: true,
+        //     momentId: true,
+        //   },
+        // },
         imgs: true,
+        _count: true,
       },
     });
     const data = await this.checkCurUserLike(moments, user.id);
-    await sleep(2000);
     return paginate({ page, data, total: await this.getMomentsCount(), row });
   }
 
@@ -173,23 +141,22 @@ export class MomentService {
         momentlikes: {
           select: { userId: true, id: true },
         },
-        momentComments: {
-          select: {
-            user: {
-              select: {
-                id: true,
-                avatar: true,
-                username: true,
-              },
-            },
-            userId: true,
-            id: true,
-            content: true,
-            createdAt: true,
-            reply: true,
-            momentId: true,
-          },
-        },
+        // momentComments: {
+        //   select: {
+        //     user: {
+        //       select: {
+        //         id: true,
+        //         avatar: true,
+        //         username: true,
+        //       },
+        //     },
+        //     userId: true,
+        //     id: true,
+        //     content: true,
+        //     createdAt: true,
+        //     momentId: true,
+        //   },
+        // },
         imgs: true,
       },
     });

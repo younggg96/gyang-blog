@@ -41,8 +41,18 @@ export class ArticleController {
   }
 
   @Get('/userId/:id')
-  findAllByUserId(@Query('page', new DefaultValuePipe(1)) page: number, @Param('id') id: string) {
-    return this.articleService.findAllByUserId(page, id);
+  async findAllByUserId(@Query('page', new DefaultValuePipe(1)) page: number, @Param('id') id: string) {
+    const { meta, data } = await this.articleService.findAllByUserId(page, id);
+    const res = await Promise.all(
+      data.map(async (article) => {
+        const categories = await this.categoryService.findMany(article.categories);
+        return {
+          ...article,
+          categories,
+        };
+      }),
+    );
+    return { meta, data: res };
   }
 
   @Get('/categoryId/:id')

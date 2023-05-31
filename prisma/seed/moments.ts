@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import { Random } from 'mockjs';
 import { create } from '../helper';
 import _ from 'lodash';
+import { connect } from 'http2';
 
 export default async () => {
   await create(64, async (prisma: PrismaClient) => {
@@ -26,21 +27,21 @@ export default async () => {
     await prisma.momentComment.create({
       data: {
         content: Random.paragraph(1, 2),
-        userId: Random.integer(1, 11),
-        momentId: Random.integer(1, 20),
+        user: { connect: { id: Random.integer(1, 11) } },
+        moment: { connect: { id: Random.integer(1, 20) } },
       },
     });
   });
   // moment replies
-  await create(120, async (prisma: PrismaClient) => {
-    await prisma.momentReply.create({
-      data: {
-        content: Random.paragraph(1, 2),
-        userId: Random.integer(1, 11),
-        momentCommentId: Random.integer(1, 120),
-      },
-    });
-  });
+  // await create(120, async (prisma: PrismaClient) => {
+  //   await prisma.momentReply.create({
+  //     data: {
+  //       content: Random.paragraph(1, 2),
+  //       userId: Random.integer(1, 11),
+  //       momentCommentId: Random.integer(1, 120),
+  //     },
+  //   });
+  // });
   // await create(120, async (prisma: PrismaClient) => {
   //   await prisma.momentReply.create({
   //     data: {

@@ -73,6 +73,7 @@ export class ArticleService {
         user: {
           connect: { id: user.id },
         },
+        published: createArticleDto.published,
         categories: {
           createMany: {
             skipDuplicates: true,

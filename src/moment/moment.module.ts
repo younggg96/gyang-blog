@@ -4,6 +4,6 @@ import { MomentController } from './moment.controller';
 
 @Module({
   controllers: [MomentController],
-  providers: [MomentService]
+  providers: [MomentService],
 })
 export class MomentModule {}

@@ -11,24 +11,24 @@ datasource db {
 }
 
 model user {
-  id            Int             @id @default(autoincrement()) @db.UnsignedInt
-  email         String          @unique
-  username      String
-  password      String
-  avatar        String?
-  profile       profile?
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-  role          String?
-  articles      article[]
-  moments       moment[]
-  collections   collection[]
-  like          like[]
-  comments      comment[]
-  commentLikes  commentLike[]
-  momentlikes   momentLike[]
-  momentComment momentComment[]
-  momentReply   momentReply[]
+  id                 Int                 @id @default(autoincrement()) @db.UnsignedInt
+  email              String              @unique
+  username           String
+  password           String
+  avatar             String?
+  profile            profile?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  role               String?
+  articles           article[]
+  moments            moment[]
+  collections        collection[]
+  like               like[]
+  comments           comment[]
+  commentLikes       commentLike[]
+  momentlikes        momentLike[]
+  momentComment      momentComment[]
+  momentCommentLikes momentCommentLike[]
 }
 
 model profile {
@@ -127,27 +127,31 @@ model momentLike {
 }
 
 model momentComment {
-  id        Int           @id @default(autoincrement()) @db.UnsignedInt
-  content   String        @db.Text
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
-  reply     momentReply[]
-  user      user?         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    Int?          @db.UnsignedInt
-  moment    moment?       @relation(fields: [momentId], references: [id])
-  momentId  Int?          @db.UnsignedInt
+  id                 Int                 @id @default(autoincrement()) @db.UnsignedInt
+  content            String              @db.Text
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  moment             moment?             @relation(fields: [momentId], references: [id])
+  momentId           Int?                @db.UnsignedInt
+  user               user?               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId             Int?                @db.UnsignedInt
+  parent             momentComment?      @relation("ChildComments", fields: [parentId], references: [id])
+  parentId           Int?                @db.UnsignedInt
+  replies            momentComment[]     @relation("ChildComments")
+  replyTo            Int?
+  momentCommentLikes momentCommentLike[]
+
+  @@map("moment_comment")
 }
 
-model momentReply {
+model momentCommentLike {
   id              Int            @id @default(autoincrement()) @db.UnsignedInt
-  content         String         @db.Text
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-  momentReplyId   Int?           @db.UnsignedInt
-  user            user?          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId          Int?           @db.UnsignedInt
+  user            user           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId          Int            @db.UnsignedInt
   momentComment   momentComment? @relation(fields: [momentCommentId], references: [id])
   momentCommentId Int?           @db.UnsignedInt
+
+  @@map("moment_comment_like")
 }
 
 model imgs {

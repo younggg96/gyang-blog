@@ -11,5 +11,9 @@ export class CreateArticleDto {
     message: "category couldn't be empty",
   })
   categoryIds: number[];
+  @IsNotEmpty({
+    message: "published couldn't be empty",
+  })
+  published: boolean;
   img: string;
 }
