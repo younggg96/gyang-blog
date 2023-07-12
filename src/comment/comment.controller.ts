@@ -12,6 +12,7 @@ export class CommentController {
   @Post('/createComment')
   @Auth()
   async create(@Body() createCommentDto: CreateCommentDto, @User() user: UserType) {
+    console.log(user);
     return await this.commentService.create(createCommentDto, user);
   }
 

@@ -108,6 +108,7 @@ export class ArticleService {
             _count: true,
           },
         },
+        _count: true,
       },
     });
     const total = await this.prisma.article.count();
@@ -146,6 +147,7 @@ export class ArticleService {
             },
           },
         },
+        _count: true,
       },
     });
     const articlesByUserCount = await this.prisma.article.count({

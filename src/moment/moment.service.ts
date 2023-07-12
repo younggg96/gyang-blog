@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { CreateMomentDto } from './dto/create-moment.dto';
-import { UpdateMomentDto } from './dto/update-moment.dto';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { user as UserType } from '@prisma/client';
@@ -10,23 +9,6 @@ import _ from 'lodash';
 @Injectable()
 export class MomentService {
   constructor(private prisma: PrismaService, private config: ConfigService) {}
-
-  async checkCurUserLikeMomentComment(momentComments, userId: number) {
-    return await Promise.all(
-      momentComments.map(async (item) => {
-        const curUserLiked = await this.prisma.momentCommentLike.findFirst({
-          where: {
-            userId,
-            momentCommentId: item.id,
-          },
-        });
-        return {
-          ...item,
-          curUserLiked: !!curUserLiked,
-        };
-      }),
-    );
-  }
 
   async checkCurUserLike(moments, userId: number) {
     return await Promise.all(
@@ -43,22 +25,6 @@ export class MomentService {
         };
       }),
     );
-  }
-
-  async momentsLikeCount(momentCommentId: number) {
-    return await this.prisma.momentCommentLike.count({
-      where: {
-        momentCommentId,
-      },
-    });
-  }
-
-  async getMomentCommentCount(momentId) {
-    return await this.prisma.momentComment.count({
-      where: {
-        momentId,
-      },
-    });
   }
 
   async getMomentsCount() {
@@ -100,22 +66,6 @@ export class MomentService {
         momentlikes: {
           select: { userId: true, id: true },
         },
-        // momentComments: {
-        //   select: {
-        //     user: {
-        //       select: {
-        //         id: true,
-        //         avatar: true,
-        //         username: true,
-        //       },
-        //     },
-        //     userId: true,
-        //     id: true,
-        //     content: true,
-        //     createdAt: true,
-        //     momentId: true,
-        //   },
-        // },
         imgs: true,
         _count: true,
       },
@@ -141,6 +91,7 @@ export class MomentService {
         _count: true,
       },
     });
+    // check user like moment
     const data = await this.checkCurUserLike(moments, user.id);
     return paginate({ page, data, total: await this.getMomentsCount(), row });
   }
@@ -210,6 +161,7 @@ export class MomentService {
         user: {
           select: { id: true, username: true, avatar: true, email: true },
         },
+        imgs: true,
         momentlikes: true,
         momentComments: {
           where: {
@@ -230,20 +182,8 @@ export class MomentService {
         _count: true,
       },
     });
-
-    const comments = await this.checkCurUserLikeMomentComment(data.momentComments, user.id);
-    const commentCount = await this.getMomentCommentCount(id);
-    const curUserLiked = await this.checkCurUserLike(id, user.id);
-    const articleLikeCount = await this.momentsLikeCount(id);
-    return { ...data, comments, commentCount, curUserLiked, articleLikeCount };
-  }
-
-  update(id: number, updateMomentDto: UpdateMomentDto) {
-    return `This action updates a #${id} moment`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} moment`;
+    const curUserLiked = await this.checkCurUserLike(data.momentComments, user.id);
+    return { ...data, curUserLiked };
   }
 
   async addLikeMoment(id: string, user: UserType) {

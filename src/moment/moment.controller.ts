@@ -33,15 +33,15 @@ export class MomentController {
     return this.momentService.findAllByUserId(page, id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateMomentDto: UpdateMomentDto) {
-    return this.momentService.update(+id, updateMomentDto);
-  }
+  // @Patch(':id')
+  // update(@Param('id') id: string, @Body() updateMomentDto: UpdateMomentDto) {
+  //   return this.momentService.update(+id, updateMomentDto);
+  // }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.momentService.remove(+id);
-  }
+  // @Delete(':id')
+  // remove(@Param('id') id: string) {
+  //   return this.momentService.remove(+id);
+  // }
 
   @Patch('/momentlike/:id')
   @Auth()
