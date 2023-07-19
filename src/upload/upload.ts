@@ -1,7 +1,7 @@
 import { applyDecorators, UnsupportedMediaTypeException, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
-const MAX_FILE_COUNT = 2;
+const MAX_FILE_COUNT = 9;
 
 //上传类型验证
 export function filterFilter(type: string) {

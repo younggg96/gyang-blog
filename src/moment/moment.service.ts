@@ -43,6 +43,11 @@ export class MomentService {
     return await this.prisma.moment.create({
       data: {
         content: createMomentDto.content,
+        imgs: {
+          createMany: {
+            data: createMomentDto.imgs.map((imgUrl) => ({ url: imgUrl })),
+          },
+        },
         user: {
           connect: {
             id: user.id,
@@ -58,7 +63,9 @@ export class MomentService {
     const moments = await this.prisma.moment.findMany({
       skip: (page - 1) * row,
       take: row,
-      orderBy: { id: 'asc' },
+      orderBy: {
+        createdAt: 'desc',
+      },
       include: {
         user: {
           select: { id: true, username: true, avatar: true },
@@ -79,7 +86,9 @@ export class MomentService {
     const moments = await this.prisma.moment.findMany({
       skip: (page - 1) * row,
       take: row,
-      orderBy: { id: 'asc' },
+      orderBy: {
+        createdAt: 'desc',
+      },
       include: {
         user: {
           select: { id: true, username: true, avatar: true },
@@ -100,9 +109,14 @@ export class MomentService {
     const page = +p; // sting -> number
     const row = +this.config.get('ARTICLE_PAGE_ROW'); // sting -> number
     const momentsByUser = await this.prisma.moment.findMany({
+      where: {
+        userId: +id,
+      },
       skip: (page - 1) * row,
       take: row,
-      orderBy: { id: 'asc' },
+      orderBy: {
+        createdAt: 'desc',
+      },
       include: {
         user: {
           select: { id: true, username: true, avatar: true },

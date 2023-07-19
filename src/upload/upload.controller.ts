@@ -1,6 +1,5 @@
 import { Controller, Post, UploadedFile, UploadedFiles } from '@nestjs/common';
 import { image, images } from './upload';
-import { sleep } from 'src/helper/helper';
 
 @Controller('upload')
 export class UploadController {
@@ -14,12 +13,13 @@ export class UploadController {
 
   @Post('images')
   @images()
-  async uploadImgs(@UploadedFiles() files) {
-    await sleep(3000);
-    const res = files.map((item) => ({
-      name: item.originalname,
-      url: `http://localhost:3000/${item.path}`,
-    }));
+  uploadImgs(@UploadedFiles() files) {
+    const res = files.map((item) => {
+      return {
+        name: item.originalname,
+        url: `http://localhost:3000/${item.path}`,
+      };
+    });
     return res;
   }
 }
