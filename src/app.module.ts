@@ -10,7 +10,9 @@ import { ProfileModule } from './profile/profile.module';
 import { MomentModule } from './moment/moment.module';
 import { CommentModule } from './comment/comment.module';
 import { ChatGptModule } from './chat-gpt/chat-gpt.module';
+import { ChatModule } from './chat/chat.module';
 import { MomentCommentModule } from './moment-comment/moment-comment.module';
+import { ConversationModule } from './conversation/conversation.module';
 import config from './config';
 
 @Module({
@@ -29,7 +31,9 @@ import config from './config';
     MomentModule,
     CommentModule,
     ChatGptModule,
+    ChatModule,
     MomentCommentModule,
+    ConversationModule,
   ],
   controllers: [],
   providers: [],

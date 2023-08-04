@@ -50,4 +50,22 @@ export default async () => {
       });
     }
   });
+  // await create(1, async (prisma: PrismaClient) => {
+  //   await prisma.conversation.create({
+  //     data: {
+  //       user: {
+
+  //       }
+  //     },
+  //   });
+  // });
+  // await create(1, async (prisma: PrismaClient) => {
+  //   await prisma.message.create({
+  //     data: {
+  //       content: 'aaa',
+  //       senderId: 3,
+  //       conversationId: 1,
+  //     },
+  //   });
+  // });
 };

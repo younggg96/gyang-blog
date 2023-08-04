@@ -17,7 +17,6 @@ DROP INDEX `user_name_key` ON `user`;
 ALTER TABLE `article` ADD COLUMN `collectionId` INTEGER UNSIGNED NULL,
     ADD COLUMN `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     ADD COLUMN `description` TEXT NULL,
-    ADD COLUMN `file` VARCHAR(191) NULL,
     ADD COLUMN `img` VARCHAR(191) NULL,
     ADD COLUMN `published` BOOLEAN NOT NULL DEFAULT false,
     ADD COLUMN `updatedAt` DATETIME(3) NOT NULL,
@@ -28,9 +27,37 @@ ALTER TABLE `user` DROP COLUMN `name`,
     ADD COLUMN `avatar` VARCHAR(191) NULL,
     ADD COLUMN `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     ADD COLUMN `email` VARCHAR(191) NOT NULL,
+    ADD COLUMN `online` BOOLEAN NOT NULL DEFAULT false,
     ADD COLUMN `role` VARCHAR(191) NULL,
     ADD COLUMN `updatedAt` DATETIME(3) NOT NULL,
     ADD COLUMN `username` VARCHAR(191) NOT NULL;
+
+-- CreateTable
+CREATE TABLE `conversation` (
+    `id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `conversation_user` (
+    `conversationId` INTEGER UNSIGNED NOT NULL,
+    `userId` INTEGER UNSIGNED NOT NULL,
+
+    PRIMARY KEY (`conversationId`, `userId`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `message` (
+    `id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
+    `content` VARCHAR(191) NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `senderId` INTEGER UNSIGNED NULL,
+    `conversationId` INTEGER UNSIGNED NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
 CREATE TABLE `profile` (
@@ -109,25 +136,23 @@ CREATE TABLE `moment_like` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `momentComment` (
+CREATE TABLE `moment_comment` (
     `id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
     `content` TEXT NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
-    `userId` INTEGER UNSIGNED NULL,
     `momentId` INTEGER UNSIGNED NULL,
+    `userId` INTEGER UNSIGNED NULL,
+    `parentId` INTEGER UNSIGNED NULL,
+    `replyTo` INTEGER NULL,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `momentReply` (
+CREATE TABLE `moment_comment_like` (
     `id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
-    `content` TEXT NOT NULL,
-    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updatedAt` DATETIME(3) NOT NULL,
-    `momentReplyId` INTEGER UNSIGNED NULL,
-    `userId` INTEGER UNSIGNED NULL,
+    `userId` INTEGER UNSIGNED NOT NULL,
     `momentCommentId` INTEGER UNSIGNED NULL,
 
     PRIMARY KEY (`id`)
@@ -152,15 +177,26 @@ CREATE TABLE `collection` (
 
 -- CreateTable
 CREATE TABLE `article_category` (
-    `id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
     `categoryId` INTEGER UNSIGNED NOT NULL,
     `articleId` INTEGER UNSIGNED NOT NULL,
 
-    PRIMARY KEY (`id`)
+    PRIMARY KEY (`articleId`, `categoryId`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateIndex
 CREATE UNIQUE INDEX `user_email_key` ON `user`(`email`);
+
+-- AddForeignKey
+ALTER TABLE `conversation_user` ADD CONSTRAINT `conversation_user_conversationId_fkey` FOREIGN KEY (`conversationId`) REFERENCES `conversation`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `conversation_user` ADD CONSTRAINT `conversation_user_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `message` ADD CONSTRAINT `message_senderId_fkey` FOREIGN KEY (`senderId`) REFERENCES `user`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `message` ADD CONSTRAINT `message_conversationId_fkey` FOREIGN KEY (`conversationId`) REFERENCES `conversation`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `profile` ADD CONSTRAINT `profile_userEmail_fkey` FOREIGN KEY (`userEmail`) REFERENCES `user`(`email`) ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -202,16 +238,19 @@ ALTER TABLE `moment_like` ADD CONSTRAINT `moment_like_userId_fkey` FOREIGN KEY (
 ALTER TABLE `moment_like` ADD CONSTRAINT `moment_like_momentId_fkey` FOREIGN KEY (`momentId`) REFERENCES `moment`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `momentComment` ADD CONSTRAINT `momentComment_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `moment_comment` ADD CONSTRAINT `moment_comment_momentId_fkey` FOREIGN KEY (`momentId`) REFERENCES `moment`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `momentComment` ADD CONSTRAINT `momentComment_momentId_fkey` FOREIGN KEY (`momentId`) REFERENCES `moment`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE `moment_comment` ADD CONSTRAINT `moment_comment_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `momentReply` ADD CONSTRAINT `momentReply_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `moment_comment` ADD CONSTRAINT `moment_comment_parentId_fkey` FOREIGN KEY (`parentId`) REFERENCES `moment_comment`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `momentReply` ADD CONSTRAINT `momentReply_momentCommentId_fkey` FOREIGN KEY (`momentCommentId`) REFERENCES `momentComment`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE `moment_comment_like` ADD CONSTRAINT `moment_comment_like_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `moment_comment_like` ADD CONSTRAINT `moment_comment_like_momentCommentId_fkey` FOREIGN KEY (`momentCommentId`) REFERENCES `moment_comment`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `imgs` ADD CONSTRAINT `imgs_momentId_fkey` FOREIGN KEY (`momentId`) REFERENCES `moment`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;

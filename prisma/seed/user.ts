@@ -13,6 +13,7 @@ const createAdmin = async () => {
       password: await hash('admin888'),
       avatar: 'https://i.pravatar.cc/150?img=' + Random.integer(1, 50),
       role: 'admin',
+      online: false,
     },
   });
   await prisma.profile.create({
@@ -38,6 +39,7 @@ const createUsers = async (count) => {
         password: await hash('admin888'),
         avatar: 'https://i.pravatar.cc/150?img=' + Random.integer(1, 50),
         role: 'user',
+        online: false,
       },
     });
     await prisma.profile.create({

@@ -13,6 +13,7 @@ datasource db {
 model user {
   id                 Int                 @id @default(autoincrement()) @db.UnsignedInt
   email              String              @unique
+  online             Boolean             @default(false)
   username           String
   password           String
   avatar             String?
@@ -29,6 +30,38 @@ model user {
   momentlikes        momentLike[]
   momentComment      momentComment[]
   momentCommentLikes momentCommentLike[]
+  message            message[]
+  conversationUser   conversationUser[]
+}
+
+model conversation {
+  id        Int                @id @default(autoincrement()) @db.UnsignedInt
+  messages  message[]
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @default(now()) @updatedAt
+  users     conversationUser[]
+}
+
+model conversationUser {
+  conversation   conversation @relation(fields: [conversationId], references: [id])
+  conversationId Int          @db.UnsignedInt
+  user           user         @relation(fields: [userId], references: [id])
+  userId         Int          @db.UnsignedInt
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @default(now()) @updatedAt
+
+  @@id([conversationId, userId])
+  @@map("conversation_user")
+}
+
+model message {
+  id             Int           @id @default(autoincrement()) @db.UnsignedInt
+  content        String
+  createdAt      DateTime      @default(now())
+  sender         user?         @relation(fields: [senderId], references: [id])
+  senderId       Int?          @db.UnsignedInt
+  conversation   conversation? @relation(fields: [conversationId], references: [id])
+  conversationId Int?          @db.UnsignedInt
 }
 
 model profile {
