@@ -63,6 +63,7 @@ export class ConversationService {
             createdAt: 'desc',
           },
           select: {
+            createdAt: true,
             conversationId: true,
             conversation: {
               select: {
