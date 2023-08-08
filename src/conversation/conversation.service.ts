@@ -67,12 +67,16 @@ export class ConversationService {
             conversationId: true,
             conversation: {
               select: {
-                messages: true,
                 users: {
                   select: {
                     user: {
                       select: { id: true, username: true, avatar: true },
                     },
+                  },
+                },
+                _count: {
+                  select: {
+                    messages: true,
                   },
                 },
               },
@@ -86,7 +90,6 @@ export class ConversationService {
         },
       },
     });
-    // return conversations;
     return paginate({ page, data: conversations.conversationUser, total: conversations._count.conversationUser, row });
   }
 

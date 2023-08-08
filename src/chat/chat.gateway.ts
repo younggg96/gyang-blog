@@ -1,5 +1,6 @@
 import { WebSocketGateway, WebSocketServer, SubscribeMessage, MessageBody, ConnectedSocket } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { MessageService } from 'src/message/message.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @WebSocketGateway({
@@ -11,28 +12,22 @@ export class ChatGateway {
   @WebSocketServer()
   server: Server;
 
-  usersMap: Map<string, Socket> = new Map();
+  constructor(private prisma: PrismaService, private msg: MessageService) {}
 
-  constructor(private prisma: PrismaService) {}
   async handleConnection(client: Socket) {
     const userId = client.handshake.query.userId;
-    if (userId) {
-      this.usersMap.set(userId.toString(), client);
-      this.prisma.user.update({
-        where: { id: +userId },
-        data: { online: true },
-      });
-    }
+    await this.prisma.user.update({
+      where: { id: +userId },
+      data: { online: true },
+    });
   }
 
   async handleDisconnect(client: Socket) {
     const userId = client.handshake.query.userId;
-    if (userId) {
-      this.prisma.user.update({
-        where: { id: +userId },
-        data: { online: false },
-      });
-    }
+    await this.prisma.user.update({
+      where: { id: +userId },
+      data: { online: false },
+    });
   }
 
   @SubscribeMessage('message')
@@ -41,15 +36,12 @@ export class ChatGateway {
     payload: { senderId: number; conversationId: number; content: string },
   ): Promise<void> {
     const { senderId, conversationId, content } = payload;
-    console.log(payload);
-    await this.prisma.message.create({
-      data: {
-        content,
-        sender: { connect: { id: +senderId } },
-        conversation: { connect: { id: +conversationId } },
-      },
+    const newMsg = await this.msg.createMessage({
+      content,
+      senderId: +senderId,
+      conversationId: +conversationId,
     });
-    this.server.to(`conversation_${conversationId}`).emit('message', { senderId, content });
+    this.server.emit('message', newMsg);
   }
 
   @SubscribeMessage('joinConversation')

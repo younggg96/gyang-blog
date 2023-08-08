@@ -14,6 +14,7 @@ import { ChatModule } from './chat/chat.module';
 import { MomentCommentModule } from './moment-comment/moment-comment.module';
 import { ConversationModule } from './conversation/conversation.module';
 import config from './config';
+import { MessageModule } from './message/message.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import config from './config';
     ChatModule,
     MomentCommentModule,
     ConversationModule,
+    MessageModule,
   ],
   controllers: [],
   providers: [],
