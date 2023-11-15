@@ -9,7 +9,13 @@ import { paginate } from 'src/helper/helper';
 export class ConversationService {
   constructor(private prisma: PrismaService, private config: ConfigService) {}
 
-  async createConversation(createConversationDto: CreateConversationDto) {
+  async createConversation(createConversationDto: CreateConversationDto, user: UserType) {
+    const conversationExists = await this.checkConversationExists(createConversationDto.userIds);
+    if (conversationExists) {
+      await this.updateConversationTimestamp(conversationExists.id, +user.id);
+      return conversationExists; // 如果对话已存在，则直接返回该对话
+    }
+
     const conversation = await this.prisma.conversation.create({
       include: {
         users: true, // 如果你想在创建时立即关联用户
@@ -27,7 +33,28 @@ export class ConversationService {
       }),
     );
 
+    await this.updateConversationTimestamp(conversation.id, +user.id);
     return await this.findByConversationId(conversation.id);
+  }
+
+  async checkConversationExists(userIds: number[]) {
+    const conversation = await this.prisma.conversation.findFirst({
+      where: {
+        AND: [{ users: { some: { userId: userIds[0] } } }, { users: { some: { userId: userIds[1] } } }],
+      },
+      include: {
+        messages: true,
+        users: {
+          select: {
+            user: {
+              select: { id: true, username: true, avatar: true },
+            },
+          },
+        },
+      },
+    });
+
+    return conversation;
   }
 
   async findByConversationId(id: number) {
@@ -60,7 +87,7 @@ export class ConversationService {
           skip: (page - 1) * row,
           take: row,
           orderBy: {
-            createdAt: 'desc',
+            updatedAt: 'desc',
           },
           select: {
             createdAt: true,
@@ -91,6 +118,17 @@ export class ConversationService {
       },
     });
     return paginate({ page, data: conversations.conversationUser, total: conversations._count.conversationUser, row });
+  }
+
+  async updateConversationTimestamp(conversationId: number, userId: number) {
+    await this.prisma.conversationUser.update({
+      where: {
+        conversationId_userId: { conversationId, userId }, // 根据需要替换为特定的 conversationId 和 userId
+      },
+      data: {
+        updatedAt: new Date(),
+      },
+    });
   }
 
   async removeConversation(id: number) {

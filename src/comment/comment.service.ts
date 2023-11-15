@@ -78,7 +78,7 @@ export class CommentService {
   async findComments(p: number, r: number, articleId: string, user: UserType) {
     const page = +p; // sting -> number
     const row = +r;
-    await sleep(1000);
+    await sleep(300);
     const comments = await this.prisma.comment.findMany({
       where: {
         articleId: +articleId,
@@ -126,7 +126,7 @@ export class CommentService {
   async findChildrenComments(p: number, r: number, parentId: string, user: UserType) {
     const page = +p; // sting -> number
     const row = +r;
-    await sleep(1000);
+    await sleep(300);
     const childrenComments = await this.prisma.comment.findMany({
       where: {
         parentId: +parentId,

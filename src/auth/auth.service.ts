@@ -62,7 +62,7 @@ export class AuthService {
       },
     });
     const profile = await this.profileService.findOne(user.email);
-    await sleep(3000);
+    await sleep(300);
     delete user.password;
     return { user, profile };
   }

@@ -301,7 +301,7 @@ export class ArticleService {
         userId: user.id,
       },
     });
-    await sleep(1000);
+    await sleep(300);
     if (!existLike) {
       await this.prisma.like.create({
         data: {
@@ -328,7 +328,7 @@ export class ArticleService {
         userId: user.id,
       },
     });
-    await sleep(1000);
+    await sleep(300);
     if (!!existLike) {
       await this.prisma.like.delete({
         where: {
