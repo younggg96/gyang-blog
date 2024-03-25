@@ -3,10 +3,10 @@ type paginateData = { page: number; total: number; row: number; data: any[] };
 export const paginate = ({ page, row, total, data }: paginateData) => {
   return {
     meta: {
-      current_page: page,
+      curPage: page,
       row: row,
       total,
-      page_row: Math.ceil(total / row),
+      pageRow: Math.ceil(total / row),
     },
     data,
   };
